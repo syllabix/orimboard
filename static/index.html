@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+        content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Online Whiteboard!</title>
+    <style>
+        * {
+            font-family: sans-serif;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Hello, and welcome to the whiteboard!</h1>
+
+    <div id="board">
+
+
+    </div>
+
+    <form id="chatbox">
+        <input name="chatinput" type="text" placeholder="Say something..."></input>
+        <button type="submit">Send</button>
+    </form>
+
+    <script type="text/javascript">
+        let id = location.pathname.split("/")[2];
+        let ws = new WebSocket("ws://localhost:8080/ws/" + id);
+        let $board = document.getElementById("board");
+        let $chatbox = document.getElementById("chatbox");
+
+        $chatbox.addEventListener("submit", (evt) => {
+            evt.preventDefault();
+            let input = evt.target.elements["chatinput"]
+            ws.send(input.value);
+            input.value = "";
+        })
+
+        ws.onopen = function () {
+            console.log("let's start");
+        }
+
+        ws.onmessage = function (evt) {
+            let node = document.createElement("p");
+            let message = JSON.parse(evt.data);
+            node.textContent = message.user_name + ": " + message.content;
+            board.append(node);
+        }
+
+        ws.onclose = function () {
+            console.log("on close");
+        }
+            // setInterval(() => {
+            //     ws.send("ping");
+            // }, 1000)
+    </script>
+
+
+</body>
+
+</html>
