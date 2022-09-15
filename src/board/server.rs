@@ -12,9 +12,16 @@ use super::{
 #[derive(Message)]
 #[rtype(result = "()")]
 pub struct Connect {
-    pub space_id: usize,
     pub user_id: usize,
+    pub space_id: usize,
     pub addr: Recipient<Update>,
+}
+
+#[derive(Message)]
+#[rtype(result = "()")]
+pub struct Disconnect {
+    pub user_id: usize,
+    pub space_id: usize,
 }
 
 #[derive(Debug, Clone)]
@@ -39,7 +46,7 @@ impl Handler<Connect> for BoardServer {
 
     fn handle(&mut self, msg: Connect, _ctx: &mut Self::Context) -> Self::Result {
         println!(
-            "user {} connecting so space {}",
+            "user {} connecting to space {}",
             &msg.user_id, &msg.space_id
         );
         if let Some(space) = self.spaces.get_mut(&msg.space_id) {
@@ -50,6 +57,22 @@ impl Handler<Connect> for BoardServer {
         let mut space = Space::new(msg.space_id);
         space.register(msg.user_id, msg.addr);
         self.spaces.insert(msg.space_id, space);
+    }
+}
+
+impl Handler<Disconnect> for BoardServer {
+    type Result = ();
+
+    fn handle(&mut self, msg: Disconnect, ctx: &mut Self::Context) -> Self::Result {
+        println!(
+            "user {} disconnecting from space {}",
+            &msg.user_id, &msg.space_id
+        );
+
+        if let Some(space) = self.spaces.get_mut(&msg.space_id) {
+            space.unregister(msg.user_id);
+            return;
+        }
     }
 }
 

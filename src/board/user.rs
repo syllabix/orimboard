@@ -30,6 +30,10 @@ impl Actor for User {
             })
             .unwrap();
     }
+
+    fn stopped(&mut self, _ctx: &mut Self::Context) {
+        println!("user {} has disconnected", self.user_id)
+    }
 }
 
 impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for User {

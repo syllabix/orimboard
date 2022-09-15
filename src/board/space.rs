@@ -1,5 +1,6 @@
 
 use std::collections::HashMap;
+use std::error::Error;
 use std::time::SystemTime;
 
 use actix::prelude::*;
@@ -30,6 +31,10 @@ impl Space {
 
     pub fn register(&mut self, user_id: usize, addr: Recipient<Update>) {
         self.users.insert(user_id, addr);
+    }
+
+    pub fn unregister(&mut self, user_id: usize) -> Option<Recipient<Update>> {
+        self.users.remove(&user_id)
     }
 }
 

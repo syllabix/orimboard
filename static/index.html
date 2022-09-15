@@ -7,9 +7,39 @@
         content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Online Whiteboard!</title>
+    <script type="text/JavaScript"
+        src="https://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js?ver=1.4.2"></script>
     <style>
+        body,
+        html {
+            height: 100%;
+        }
+
         * {
             font-family: sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        h1 {
+            padding: 5px 10px;
+        }
+
+        #chatwrapper {
+            padding: 10px;
+            margin: 10px;
+            border: 1px solid #333;
+            border-radius: 2px;
+        }
+
+        #chatroom,
+        #chatroom {
+            margin: 5px;
+        }
+
+        #whiteboard {
+            cursor: crosshair;
+            position: fixed;
         }
     </style>
 </head>
@@ -17,20 +47,25 @@
 <body>
     <h1>Hello, and welcome to the whiteboard!</h1>
 
-    <div id="board">
+    <div id="chatwrapper">
+        <h5>Chat</h5>
+        <div id="chatroom">
 
-
+        </div>
+        <form id="chatbox">
+            <input name="chatinput" type="text" placeholder="Say something..."></input>
+            <button type="submit">Send</button>
+        </form>
     </div>
 
-    <form id="chatbox">
-        <input name="chatinput" type="text" placeholder="Say something..."></input>
-        <button type="submit">Send</button>
-    </form>
+    <canvas id="whiteboard">
+        Sorry, your browser does not support HTML5 canvas technology.
+    </canvas>
 
     <script type="text/javascript">
         let id = location.pathname.split("/")[2];
         let ws = new WebSocket("ws://localhost:8080/ws/" + id);
-        let $board = document.getElementById("board");
+        let $board = document.getElementById("chatroom");
         let $chatbox = document.getElementById("chatbox");
 
         $chatbox.addEventListener("submit", (evt) => {
@@ -48,15 +83,97 @@
             let node = document.createElement("p");
             let message = JSON.parse(evt.data);
             node.textContent = message.user_name + ": " + message.content;
-            board.append(node);
+            $board.append(node);
         }
 
         ws.onclose = function () {
             console.log("on close");
         }
-            // setInterval(() => {
-            //     ws.send("ping");
-            // }, 1000)
+
+        window.onload = function () {
+            var myCanvas = document.getElementById("whiteboard");
+            var ctx = myCanvas.getContext("2d");
+
+            // Fill Window Width and Height
+            myCanvas.width = window.innerWidth;
+            myCanvas.height = window.innerHeight;
+
+            // Set Background Color
+            ctx.fillStyle = "#fff";
+            ctx.fillRect(0, 0, myCanvas.width, myCanvas.height);
+
+            // Mouse Event Handlers
+            if (myCanvas) {
+                var isDown = false;
+                var canvasX, canvasY;
+                ctx.lineWidth = 5;
+
+                $(myCanvas)
+                    .mousedown(function (e) {
+                        isDown = true;
+                        ctx.beginPath();
+                        canvasX = e.pageX - myCanvas.offsetLeft;
+                        canvasY = e.pageY - myCanvas.offsetTop;
+                        ctx.moveTo(canvasX, canvasY);
+                    })
+                    .mousemove(function (e) {
+                        if (isDown !== false) {
+                            canvasX = e.pageX - myCanvas.offsetLeft;
+                            canvasY = e.pageY - myCanvas.offsetTop;
+                            ctx.lineTo(canvasX, canvasY);
+                            ctx.strokeStyle = "#000";
+                            ctx.stroke();
+                        }
+                    })
+                    .mouseup(function (e) {
+                        isDown = false;
+                        ctx.closePath();
+                    });
+            }
+
+            // Touch Events Handlers
+            draw = {
+                started: false,
+                start: function (evt) {
+
+                    ctx.beginPath();
+                    ctx.moveTo(
+                        evt.touches[0].pageX,
+                        evt.touches[0].pageY
+                    );
+
+                    this.started = true;
+
+                },
+                move: function (evt) {
+
+                    if (this.started) {
+                        ctx.lineTo(
+                            evt.touches[0].pageX,
+                            evt.touches[0].pageY
+                        );
+
+                        ctx.strokeStyle = "#000";
+                        ctx.lineWidth = 5;
+                        ctx.stroke();
+                    }
+
+                },
+                end: function (evt) {
+                    this.started = false;
+                }
+            };
+
+            // Touch Events
+            myCanvas.addEventListener('touchstart', draw.start, false);
+            myCanvas.addEventListener('touchend', draw.end, false);
+            myCanvas.addEventListener('touchmove', draw.move, false);
+
+            // Disable Page Move
+            document.body.addEventListener('touchmove', function (evt) {
+                evt.preventDefault();
+            }, false);
+        };
     </script>
 
 
