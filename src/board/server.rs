@@ -49,6 +49,7 @@ impl Handler<Connect> for BoardServer {
             "user {} connecting to space {}",
             &msg.user_id, &msg.space_id
         );
+
         if let Some(space) = self.spaces.get_mut(&msg.space_id) {
             space.register(msg.user_id, msg.addr);
             return;
@@ -63,7 +64,7 @@ impl Handler<Connect> for BoardServer {
 impl Handler<Disconnect> for BoardServer {
     type Result = ();
 
-    fn handle(&mut self, msg: Disconnect, ctx: &mut Self::Context) -> Self::Result {
+    fn handle(&mut self, msg: Disconnect, _ctx: &mut Self::Context) -> Self::Result {
         println!(
             "user {} disconnecting from space {}",
             &msg.user_id, &msg.space_id
@@ -71,7 +72,6 @@ impl Handler<Disconnect> for BoardServer {
 
         if let Some(space) = self.spaces.get_mut(&msg.space_id) {
             space.unregister(msg.user_id);
-            return;
         }
     }
 }

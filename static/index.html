@@ -6,9 +6,7 @@
     <meta name="viewport"
         content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Online Whiteboard!</title>
-    <script type="text/JavaScript"
-        src="https://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js?ver=1.4.2"></script>
+    <title>somber chat</title>
     <style>
         body,
         html {
@@ -45,7 +43,7 @@
 </head>
 
 <body>
-    <h1>Hello, and welcome to the whiteboard!</h1>
+    <h1>somber chat</h1>
 
     <div id="chatwrapper">
         <h5>Chat</h5>
@@ -67,11 +65,22 @@
         let ws = new WebSocket("ws://localhost:8080/ws/" + id);
         let $board = document.getElementById("chatroom");
         let $chatbox = document.getElementById("chatbox");
+        var $myCanvas, ctx;
+
+        const handleChatMessage = (message) => {
+            let node = document.createElement("p");
+            node.textContent = message.user_name + ": " + message.content.text;
+            $board.append(node);
+        }
 
         $chatbox.addEventListener("submit", (evt) => {
             evt.preventDefault();
             let input = evt.target.elements["chatinput"]
-            ws.send(input.value);
+            let msg = JSON.stringify({
+                type: "ChatMessage",
+                text: input.value,
+            });
+            ws.send(msg);
             input.value = "";
         })
 
@@ -80,55 +89,106 @@
         }
 
         ws.onmessage = function (evt) {
-            let node = document.createElement("p");
             let message = JSON.parse(evt.data);
-            node.textContent = message.user_name + ": " + message.content;
-            $board.append(node);
+
+            switch (message.content.type) {
+                case "ChatMessage":
+                    handleChatMessage(message);
+                    break;
+                case "DrawInstruction":
+                switch (message.content.action) {
+                    case "start":
+                        ctx.beginPath();
+                        var canvasX = message.content.x;
+                        var canvasY = message.content.y;
+                        ctx.moveTo(canvasX, canvasY);
+                        break;
+                    case "stroke":
+                        var canvasX = message.content.x;
+                        var canvasY = message.content.y;
+                        ctx.lineTo(canvasX, canvasY);
+                        ctx.strokeStyle = strokeColor;
+                        ctx.stroke();
+                        break;
+                    case "finish":
+                        ctx.closePath();
+                        break;
+                }
+                break;
+                default:
+                    console.warn("unknown content type: ", message.content.type)
+            }
         }
 
         ws.onclose = function () {
             console.log("on close");
         }
 
+        let strokeColor = "#333";
+        const sendDrawInstruction = (evt) => {
+            evt.type = "DrawInstruction";
+            let msg = JSON.stringify(evt);
+            ws.send(msg);
+        }
+
         window.onload = function () {
-            var myCanvas = document.getElementById("whiteboard");
-            var ctx = myCanvas.getContext("2d");
+            $myCanvas = document.getElementById("whiteboard");
+            ctx = $myCanvas.getContext("2d");
 
             // Fill Window Width and Height
-            myCanvas.width = window.innerWidth;
-            myCanvas.height = window.innerHeight;
+            $myCanvas.width = window.innerWidth;
+            $myCanvas.height = window.innerHeight;
 
             // Set Background Color
             ctx.fillStyle = "#fff";
-            ctx.fillRect(0, 0, myCanvas.width, myCanvas.height);
+            ctx.fillRect(0, 0, $myCanvas.width, $myCanvas.height);
 
             // Mouse Event Handlers
-            if (myCanvas) {
+            if ($myCanvas) {
                 var isDown = false;
                 var canvasX, canvasY;
                 ctx.lineWidth = 5;
 
-                $(myCanvas)
-                    .mousedown(function (e) {
-                        isDown = true;
-                        ctx.beginPath();
-                        canvasX = e.pageX - myCanvas.offsetLeft;
-                        canvasY = e.pageY - myCanvas.offsetTop;
-                        ctx.moveTo(canvasX, canvasY);
-                    })
-                    .mousemove(function (e) {
-                        if (isDown !== false) {
-                            canvasX = e.pageX - myCanvas.offsetLeft;
-                            canvasY = e.pageY - myCanvas.offsetTop;
-                            ctx.lineTo(canvasX, canvasY);
-                            ctx.strokeStyle = "#000";
-                            ctx.stroke();
-                        }
-                    })
-                    .mouseup(function (e) {
-                        isDown = false;
-                        ctx.closePath();
+                $myCanvas.addEventListener("mousedown", e => {
+                    isDown = true;
+                    ctx.beginPath();
+                    canvasX = e.pageX - $myCanvas.offsetLeft;
+                    canvasY = e.pageY - $myCanvas.offsetTop;
+                    ctx.moveTo(canvasX, canvasY);
+                    sendDrawInstruction({
+                        x: canvasX,
+                        y: canvasY,
+                        color: strokeColor,
+                        action: "start"
                     });
+                });
+
+                $myCanvas.addEventListener("mousemove", e => {
+                    if (isDown === true) {
+                        canvasX = e.pageX - $myCanvas.offsetLeft;
+                        canvasY = e.pageY - $myCanvas.offsetTop;
+                        ctx.lineTo(canvasX, canvasY);
+                        ctx.strokeStyle = strokeColor;
+                        ctx.stroke();
+                        sendDrawInstruction({
+                            x: canvasX,
+                            y: canvasY,
+                            color: strokeColor,
+                            action: "stroke"
+                        });
+                    }
+                });
+
+                $myCanvas.addEventListener("mouseup", e => {
+                    isDown = false;
+                    ctx.closePath();
+                    sendDrawInstruction({
+                        x: 0,
+                        y: 0,
+                        color: strokeColor,
+                        action: "finish",
+                    });
+                });
             }
 
             // Touch Events Handlers
@@ -165,9 +225,9 @@
             };
 
             // Touch Events
-            myCanvas.addEventListener('touchstart', draw.start, false);
-            myCanvas.addEventListener('touchend', draw.end, false);
-            myCanvas.addEventListener('touchmove', draw.move, false);
+            $myCanvas.addEventListener('touchstart', draw.start, false);
+            $myCanvas.addEventListener('touchend', draw.end, false);
+            $myCanvas.addEventListener('touchmove', draw.move, false);
 
             // Disable Page Move
             document.body.addEventListener('touchmove', function (evt) {

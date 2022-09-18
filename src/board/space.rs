@@ -1,12 +1,31 @@
-
 use std::collections::HashMap;
-use std::error::Error;
 use std::time::SystemTime;
 
 use actix::prelude::*;
 
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum DrawAction {
+    Start,
+    Stroke,
+    Finish,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(tag = "type")]
+pub enum Content {
+    ChatMessage {
+        text: String,
+    },
+    DrawInstruction {
+        x: i64,
+        y: i64,
+        color: String,
+        action: DrawAction,
+    },
+}
 
 #[derive(Message, Serialize, Clone)]
 #[rtype(result = "()")]
@@ -14,19 +33,22 @@ pub struct Update {
     pub user_id: usize,
     pub space_id: usize,
     pub user_name: String,
-    pub content: String,
+    pub content: Content,
     pub created_at: SystemTime,
 }
 
 #[derive(Debug, Clone)]
 pub struct Space {
-    id: usize,
+    _id: usize,
     pub users: HashMap<usize, Recipient<Update>>,
 }
 
 impl Space {
     pub fn new(id: usize) -> Space {
-        Space { id, users: HashMap::new(), }
+        Space {
+            _id: id,
+            users: HashMap::new(),
+        }
     }
 
     pub fn register(&mut self, user_id: usize, addr: Recipient<Update>) {
@@ -37,5 +59,3 @@ impl Space {
         self.users.remove(&user_id)
     }
 }
-
-
