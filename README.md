@@ -1,12 +1,21 @@
-# somber-chat
-a very lonely high perf chat server in rust
+# orim
 
-### as with all things good in rust
+a collaborative chat and white board app built with Rust and Next.js
+
+## purpose
+
+to experiment with implementing latency sensitive web applications with Rust and Web Canvas (via React).
+
+### getting started
+
+Ensure you have Rust and Node.js installed
 
 ```
-cargo run
+## start up the server
+make run.server
+
+## start up the client
+make run.client
 ```
 
-then open chrome at http://localhost:8080/board/1234
-
-then open safari at http://localhost:8080/board/1234
+then open a web browser http://localhost:3000

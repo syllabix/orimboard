@@ -1,8 +1,9 @@
 use actix::{Actor, Addr, Context, Handler, Message, Recipient};
-use actix_web::{web, Error, HttpRequest, HttpResponse};
+use actix_web::{http::{StatusCode, header::ContentType}, web, HttpRequest, HttpResponse, ResponseError, body::BoxBody, Error};
 use actix_web_actors::ws;
 use rand::Rng;
 use std::collections::HashMap;
+use derive_more::{Display, Error};
 
 use super::{
     space::{Space, Update},
@@ -88,13 +89,42 @@ impl Handler<Update> for BoardServer {
     }
 }
 
+#[derive(Debug, Display, Error)]
+pub enum ServerError {
+    #[display(fmt = "The board id is invalid")]
+    InvalidBoardId,
+}
+
+impl ResponseError for ServerError {
+    fn status_code(&self) -> StatusCode {
+        match self {
+            ServerError::InvalidBoardId => StatusCode::BAD_REQUEST,
+        }
+    }
+
+    fn error_response(&self) -> HttpResponse<BoxBody> {
+        HttpResponse::build(self.status_code())
+            .insert_header(ContentType::json())
+            .body(self.to_string())
+    }
+}
+
 pub async fn start_up(
     req: HttpRequest,
     stream: web::Payload,
     server: web::Data<Addr<BoardServer>>,
 ) -> Result<HttpResponse, Error> {
     let user_id: usize = rand::thread_rng().gen();
-    let space_id: usize = req.match_info().get("id").unwrap().parse().unwrap();
+    let space_id: &str = match req.match_info().get("id") {
+        Some(id) => id,
+        None => return Err(Error::from(ServerError::InvalidBoardId)),
+    };
+
+    let space_id: usize = match space_id.trim().parse() {
+        Ok(id) => id,
+        Err(_) => return Err(Error::from(ServerError::InvalidBoardId)),
+    };
+
     ws::start(
         User {
             user_id,
