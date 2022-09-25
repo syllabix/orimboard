@@ -14,10 +14,18 @@ pub enum DrawAction {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(tag = "type")]
+#[serde(tag = "type", rename_all = "camelCase")]
+pub struct ChatMessage {
+    pub user_id: usize,
+    pub text: String,
+    pub sent_at: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(tag = "type", rename_all = "camelCase")]
 pub enum Content {
-    ChatMessage {
-        text: String,
+    Chat {
+        payload: ChatMessage,
     },
     DrawInstruction {
         x: i64,

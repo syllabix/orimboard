@@ -77,8 +77,12 @@
             evt.preventDefault();
             let input = evt.target.elements["chatinput"]
             let msg = JSON.stringify({
-                type: "ChatMessage",
-                text: input.value,
+                type: "chat",
+                payload: {
+                    userId: 120930,
+                    text: input.value,
+                    sentAt: new Date(),
+                },
             });
             ws.send(msg);
             input.value = "";
@@ -92,7 +96,7 @@
             let message = JSON.parse(evt.data);
 
             switch (message.content.type) {
-                case "ChatMessage":
+                case "chat":
                     handleChatMessage(message);
                     break;
                 case "DrawInstruction":
