@@ -1,24 +1,46 @@
+import Button from "components/button"
+import { Card } from "components/layout/card"
+import { Field, Form, Formik } from "formik"
 import { ChatMessage } from "../../whiteboard/chat"
-import { BoardUpdate } from "../../whiteboard/state/action"
+import { BoardAction } from "../../whiteboard/state/action"
 
 type Props = {
-    send: (msg: BoardUpdate) => void,
+    send: (msg: BoardAction) => void,
     messages: Array<ChatMessage>,
 }
 
 export const Messenger: React.FC<Props> = ({ send, messages }) => (
-    <div className="absolute right-4 h-screen top-4 z-10">
-        <div className="bg-slate-600 shadow-lg rounded-md p-2 flex content-center">
+    <div className="absolute right-4 top-4 z-10">
+        <Card>
             <h2 className="text-xl font-semibold">chat</h2>
-        </div>
-        <div className="bg-slate-600 shadow-lg rounded-md p-2 mt-4">
+        </Card>
+        <Card className="mt-4">
             <div className="rounded-md w-44">
                 {messages.map(msg => (
-                    <p className="p-1 rounded-md bg-slate-300">
+                    <p key={msg.sentAt} className="p-1 rounded-md bg-slate-300 my-2 text-slate-900">
                         {msg.text}
                     </p>
                 ))}
             </div>
-        </div>
+            <Formik
+                initialValues={{ message: '' }}
+                onSubmit={(values, { resetForm }) => {
+                    send({
+                        type: 'chat',
+                        payload: {
+                            text: values.message,
+                            sentAt: new Date().toISOString()
+                        }
+                    })
+                    resetForm();
+                }}
+            >
+                <Form>
+                    <Field className="input mr-1" name="message" placeholder="say something..." />
+                    <Button type="submit">send</Button>
+                </Form>
+            </Formik>
+        </Card>
+
     </div>
 )

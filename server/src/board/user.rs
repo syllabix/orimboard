@@ -6,7 +6,7 @@ use serde_json;
 
 use super::{
     server::{BoardServer, Connect, Disconnect},
-    space::{Content, Update},
+    space::{Update, Action},
 };
 
 pub struct User {
@@ -43,7 +43,7 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for User {
     fn handle(&mut self, msg: Result<Message, ProtocolError>, ctx: &mut Self::Context) {
         match msg {
             Ok(ws::Message::Text(text)) => {
-                let content: Content = match serde_json::from_slice(text.as_bytes()) {
+                let action: Action = match serde_json::from_slice(text.as_bytes()) {
                     Ok(c) => c,
                     Err(e) => {
                         println!("ouch.... {:?}", e);
@@ -51,11 +51,13 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for User {
                     }
                 };
 
+                println!("received action {:?}", action);
+
                 self.addr.do_send(Update {
                     user_id: self.user_id,
                     space_id: self.space_id,
                     user_name: self.name.clone(),
-                    content,
+                    action,
                     created_at: SystemTime::now(),
                 })
             }

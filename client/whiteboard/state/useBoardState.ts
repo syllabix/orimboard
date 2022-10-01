@@ -1,6 +1,7 @@
 import { useReducer } from 'react';
+import { LineData } from 'whiteboard/drawing/line';
 import BoardState from '.';
-import { BoardUpdate } from './action';
+import { BoardAction } from './action';
 
 const initialState: BoardState = {
     loading: false,
@@ -13,14 +14,26 @@ const initialState: BoardState = {
         circle: {},
         rect: {},
     },
+    lines: {},
 }
 
-const reducer = (state: BoardState, action: BoardUpdate): BoardState => {
+const reducer = (state: BoardState, action: BoardAction): BoardState => {
+    // console.log(state);
     switch (action.type) {
         case 'connect':
             return {
                 ...state,
                 ...{ connecting: action.payload },
+            }
+        case 'chat':
+            return {
+                ...state,
+                ...{
+                    chat: [
+                        ...state.chat,
+                        action.payload
+                    ]
+                }
             }
         case 'user-join':
             return {
@@ -39,15 +52,38 @@ const reducer = (state: BoardState, action: BoardUpdate): BoardState => {
                 }
             }
         }
-        case 'move-widget': {
+        case 'widget': {
+            const update = {
+                ...state.widgets[action.payload.kind],
+                ...{ [action.payload.id]: action.payload }
+            }
             return {
                 ...state,
                 widgets: {
                     ...state.widgets,
-                    ...{ [action.payload.id]: action.payload }
+                    ...{ [action.payload.kind]: update }
                 }
             }
         }
+        case 'draw':
+            const points = (state.lines[action.payload.id] == null) ? [] : state.lines[action.payload.id].points
+            const line: LineData = {
+                id: action.payload.id,
+                tool: 'pen',
+                points: [
+                    ...points,
+                    ...[action.payload.point.x, action.payload.point.y]
+                ],
+                color: action.payload.color
+            }
+            const update = {
+                ...state.lines,
+                ...{ [action.payload.id]: line }
+            }
+            return {
+                ...state,
+                lines: update
+            }
         default:
             return state
     }
