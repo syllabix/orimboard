@@ -4,7 +4,7 @@ import { BoardAction } from "../state/action";
 type Updater = (update: BoardAction) => void
 
 export const useSocket = (id: string, dispatch: Dispatch<BoardAction>): Updater => {
-    let ws: MutableRefObject<WebSocket | null> = useRef(null);
+    const ws: MutableRefObject<WebSocket | null> = useRef(null);
     useEffect(() => {
         if (typeof id === "undefined") return;
         ws.current = new WebSocket("ws://localhost:8080/ws/" + id);

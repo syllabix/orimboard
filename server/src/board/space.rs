@@ -50,12 +50,16 @@ pub enum WidgetKind {
 pub struct Widget {
     pub id: String,
     pub kind: WidgetKind,
-    pub x: i64,
-    pub y: i64,
-    pub width: i64,
-    pub height: i64,
+    pub x: f64,
+    pub y: f64,
+    pub width: f64,
+    pub height: f64,
     pub fill: String,
     pub stroke: String,
+    pub draggable: bool,
+
+    #[serde(default)]
+    pub text: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

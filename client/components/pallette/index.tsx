@@ -13,17 +13,19 @@ type Props = {
 const Pallette: React.FC<Props> = ({ onUpdate }) => {
 
     const addWidget = (kind: WidgetKind) => {
+        // TODO: move all this setup to the backend (on widget create)
         onUpdate({
             type: "widget",
             payload: {
                 id: new Date().getTime().toString(),
                 kind: kind,
-                x: 100,
-                y: 100,
-                width: 150,
-                height: 150,
-                fill: "#fff",
-                stroke: "#333"
+                x: 180,
+                y: 350,
+                width: kind === 'sticky' ? 220 : 150,
+                height: kind === 'sticky' ? 220 : 150,
+                fill: kind === 'sticky' ? "#ffff99" : "#fff",
+                stroke: kind === 'sticky' ? "#ffff99" : "#fff",
+                draggable: true
             }
         })
     }
@@ -35,6 +37,7 @@ const Pallette: React.FC<Props> = ({ onUpdate }) => {
                 <Button onClick={() => onUpdate({ type: 'mode', payload: 'draw' })} >Draw</Button>
                 <Button onClick={() => addWidget("rect")}>Rect</Button>
                 <Button onClick={() => addWidget("circle")}>Circle</Button>
+                <Button onClick={() => addWidget("star")}>Star</Button>
                 <Button onClick={() => addWidget("sticky")}>Sticky</Button>
             </Card>
         </aside>

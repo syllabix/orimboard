@@ -12,9 +12,7 @@ type BoardState = {
         [id: string]: User,
     }
     chat: Array<ChatMessage>;
-    widgets: {
-        [kind in WidgetKind]: { [id: string]: WidgetData; };
-    },
+    widgets: { [id: string]: WidgetData; };
     lines: Array<LineData>
 }
 

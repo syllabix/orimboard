@@ -2,16 +2,17 @@ import { KonvaEventObject } from 'konva/lib/Node';
 import { ReactNode, useRef } from 'react';
 import { Layer, Line, Stage } from 'react-konva';
 import { BoardAction } from 'whiteboard/state/action';
-import { WidgetData } from 'whiteboard/widget';
 import BoardState from './state';
 
 type Props = {
-    children: ReactNode,
     state: BoardState,
+    children: ReactNode,
+    cursor?: "default" | "grab" | "grabbing",
     dispatch: (msg: BoardAction) => void,
+    onRelease: (e: KonvaEventObject<MouseEvent>) => void,
 }
 
-export const Sketchpad: React.FC<Props> = ({ children, state, dispatch }) => {
+export const Sketchpad: React.FC<Props> = ({ state, cursor = "default", children, dispatch, onRelease }) => {
     const drawing = useRef({
         active: false,
         id: ''
@@ -68,7 +69,8 @@ export const Sketchpad: React.FC<Props> = ({ children, state, dispatch }) => {
         })
     };
 
-    const handleMouseUp = () => {
+    const handleMouseUp = (e: KonvaEventObject<MouseEvent>) => {
+        onRelease(e);
         drawing.current = {
             active: false,
             id: "",
@@ -79,11 +81,14 @@ export const Sketchpad: React.FC<Props> = ({ children, state, dispatch }) => {
         <Stage
             width={window.innerWidth}
             height={window.innerHeight}
+            style={{ cursor }}
             className="absolute top-0 left-0"
             onMouseDown={handleMouseDown}
             onMousemove={handleMouseMove}
             onMouseup={handleMouseUp}
         >
+            {children}
+
             <Layer>
                 {state.lines.map(line => (
                     <Line
@@ -100,9 +105,6 @@ export const Sketchpad: React.FC<Props> = ({ children, state, dispatch }) => {
                     />
                 ))}
             </Layer>
-
-            {children}
-
         </Stage>
     )
 }

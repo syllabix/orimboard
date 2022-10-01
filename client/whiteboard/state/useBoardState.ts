@@ -9,12 +9,7 @@ const initialState: BoardState = {
     mode: 'select',
     chat: [],
     users: {},
-    widgets: {
-        star: {},
-        sticky: {},
-        circle: {},
-        rect: {},
-    },
+    widgets: {},
     lines: [],
 }
 
@@ -50,16 +45,12 @@ const reducer = (state: BoardState, action: BoardAction): BoardState => {
             }
 
         case 'widget':
-            const update = {
-                ...state.widgets[action.payload.kind],
-                ...{ [action.payload.id]: action.payload }
-            }
             return {
                 ...state,
                 mode: "shape",
                 widgets: {
                     ...state.widgets,
-                    ...{ [action.payload.kind]: update }
+                    ...{ [action.payload.id]: action.payload }
                 }
             }
 
