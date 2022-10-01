@@ -6,7 +6,7 @@ use actix::prelude::*;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "lowercase")]
+#[serde(rename_all = "camelCase")]
 pub enum DrawAction {
     Start,
     Stroke,
@@ -30,9 +30,10 @@ pub struct Point {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct DrawInstruction {
+    pub id: String,
     pub point: Point,
     pub color: String,
-    // pub action: DrawAction,
+    pub action: DrawAction,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

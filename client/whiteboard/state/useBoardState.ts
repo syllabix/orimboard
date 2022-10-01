@@ -14,7 +14,7 @@ const initialState: BoardState = {
         circle: {},
         rect: {},
     },
-    lines: {},
+    lines: [],
 }
 
 const reducer = (state: BoardState, action: BoardAction): BoardState => {
@@ -66,24 +66,48 @@ const reducer = (state: BoardState, action: BoardAction): BoardState => {
             }
         }
         case 'draw':
-            const points = (state.lines[action.payload.id] == null) ? [] : state.lines[action.payload.id].points
-            const line: LineData = {
-                id: action.payload.id,
-                tool: 'pen',
-                points: [
-                    ...points,
-                    ...[action.payload.point.x, action.payload.point.y]
-                ],
-                color: action.payload.color
+            switch (action.payload.action) {
+                case "start":
+                    return {
+                        ...state,
+                        lines: state.lines.concat(
+                            {
+                                id: action.payload.id,
+                                tool: "pen",
+                                color: action.payload.color,
+                                points: [action.payload.point.x, action.payload.point.y]
+                            }
+                        )
+                    }
+                default:
+                    let lastLine = state.lines[state.lines.length - 1];
+                    lastLine.points = lastLine.points.concat([action.payload.point.x, action.payload.point.y]);
+                    state.lines.splice(state.lines.length - 1, 1, lastLine);
+                    return {
+                        ...state,
+                        lines: state.lines.concat()
+                    }
             }
-            const update = {
-                ...state.lines,
-                ...{ [action.payload.id]: line }
-            }
-            return {
-                ...state,
-                lines: update
-            }
+
+
+        // const points = (state.lines[action.payload.id] == null) ? [] : state.lines[action.payload.id].points
+        // const line: LineData = {
+        //     id: action.payload.id,
+        //     tool: 'pen',
+        //     points: [
+        //         ...points,
+        //         ...[action.payload.point.x, action.payload.point.y]
+        //     ],
+        //     color: action.payload.color
+        // }
+        // const update = {
+        //     ...state.lines,
+        //     ...{ [action.payload.id]: line }
+        // }
+        // return {
+        //     ...state,
+        //     lines: update
+        // }
         default:
             return state
     }

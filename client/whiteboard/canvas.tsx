@@ -37,12 +37,13 @@ export const Canvas: React.FC<Props> = ({ state, dispatch }) => {
         dispatch({
             type: "draw",
             payload: {
-                id,
+                id: id,
                 point: {
                     x: pos.x,
                     y: pos.y,
                 },
-                color: "#34ebc0"
+                color: "#34ebc0",
+                action: "start",
             }
         })
     };
@@ -65,7 +66,8 @@ export const Canvas: React.FC<Props> = ({ state, dispatch }) => {
                     x: pos.x,
                     y: pos.y,
                 },
-                color: "#34ebc0"
+                color: "#34ebc0",
+                action: "stroke",
             }
         })
     };
@@ -78,7 +80,7 @@ export const Canvas: React.FC<Props> = ({ state, dispatch }) => {
     };
 
     useEffect(() => {
-        console.log(Object.values(state.lines))
+        console.log(state.lines)
     }, [state.lines])
 
     return (
@@ -91,7 +93,7 @@ export const Canvas: React.FC<Props> = ({ state, dispatch }) => {
             onMouseup={handleMouseUp}
         >
             <Layer>
-                {Object.values(state.lines).map(line => {
+                {state.lines.map(line => {
                     <Line
                         key={line.id}
                         points={line.points}
@@ -100,14 +102,12 @@ export const Canvas: React.FC<Props> = ({ state, dispatch }) => {
                         tension={0.5}
                         lineCap="round"
                         lineJoin="round"
+                        zIndex={99}
                         globalCompositeOperation={
                             line.tool === 'eraser' ? 'destination-out' : 'source-over'
                         }
                     />
                 })}
-            </Layer>
-
-            <Layer>
                 {Object.values(state.widgets.rect).map(rect => (
                     <Rect draggable
                         key={rect.id}
