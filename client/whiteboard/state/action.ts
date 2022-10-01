@@ -1,3 +1,4 @@
+import { PalletteMode } from "components/pallette";
 import { LineData, Point } from "whiteboard/drawing/line";
 import { ChatMessage } from "../chat";
 import { User } from "../user";
@@ -43,4 +44,17 @@ type Draw = {
     }
 }
 
-export type BoardAction = Connect | UserJoin | UserLeave | Chat | AddWidget | MoveWidget | Draw;
+type ToggleMode = {
+    type: "mode",
+    payload: PalletteMode
+}
+
+export type BoardAction =
+    Connect
+    | UserJoin
+    | UserLeave
+    | Chat
+    | AddWidget
+    | MoveWidget
+    | Draw
+    | ToggleMode;

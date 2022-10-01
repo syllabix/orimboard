@@ -81,7 +81,7 @@ impl Handler<Update> for BoardServer {
     type Result = ();
 
     fn handle(&mut self, msg: Update, _ctx: &mut Self::Context) -> Self::Result {
-        println!("board update {:?}", msg);
+        // println!("board update {:?}", msg);
         if let Some(space) = self.spaces.get(&msg.space_id) {
             for (user_id, user) in space.users.iter() {
                 if msg.user_id != *user_id {
