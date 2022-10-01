@@ -31,7 +31,6 @@ const WhiteboardPage: NextPage = () => {
             <Pallette onUpdate={updater} />
             <Messenger messages={state.chat} send={updater} />
             <Whiteboard state={state} dispatch={updater} />
-
         </>
     )
 }

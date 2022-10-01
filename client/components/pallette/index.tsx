@@ -4,7 +4,7 @@ import { BoardAction } from "whiteboard/state/action";
 import { WidgetKind } from "whiteboard/widget";
 
 
-export type PalletteMode = "select" | "draw" | "circle" | "rect" | "sticky"
+export type PalletteMode = "select" | "draw" | "shape" | "sticky"
 
 type Props = {
     onUpdate: (msg: BoardAction) => void,
@@ -32,7 +32,7 @@ const Pallette: React.FC<Props> = ({ onUpdate }) => {
         <aside className="fixed left-4 top-1/3 z-10">
             <Card className="flex flex-col space-y-1">
                 <Button>Select</Button>
-                <Button>Draw</Button>
+                <Button onClick={() => onUpdate({ type: 'mode', payload: 'draw' })} >Draw</Button>
                 <Button onClick={() => addWidget("rect")}>Rect</Button>
                 <Button onClick={() => addWidget("circle")}>Circle</Button>
                 <Button onClick={() => addWidget("sticky")}>Sticky</Button>
