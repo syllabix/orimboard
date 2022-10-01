@@ -39,6 +39,7 @@ type Draw = {
         id: string,
         point: Point
         color: string,
+        action: "start" | "stroke" | "finish"
     }
 }
 

@@ -13,9 +13,7 @@ type BoardState = {
     widgets: {
         [kind in WidgetKind]: { [id: string]: WidgetData; };
     },
-    lines: {
-        [id: string]: LineData,
-    }
+    lines: Array<LineData>
 }
 
 export default BoardState;

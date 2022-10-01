@@ -15,7 +15,7 @@ export const Messenger: React.FC<Props> = ({ send, messages }) => (
             <h2 className="text-xl font-semibold">chat</h2>
         </Card>
         <Card className="mt-4">
-            <div className="rounded-md w-44">
+            <div className="rounded-md">
                 {messages.map(msg => (
                     <p key={msg.sentAt} className="p-1 rounded-md bg-slate-300 my-2 text-slate-900">
                         {msg.text}
@@ -36,7 +36,7 @@ export const Messenger: React.FC<Props> = ({ send, messages }) => (
                 }}
             >
                 <Form>
-                    <Field className="input mr-1" name="message" placeholder="say something..." />
+                    <Field className="input mr-2" name="message" placeholder="say something..." />
                     <Button type="submit">send</Button>
                 </Form>
             </Formik>
