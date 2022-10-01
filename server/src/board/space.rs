@@ -14,34 +14,66 @@ pub enum DrawAction {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(tag = "type", rename_all = "camelCase")]
-pub struct ChatMessage {
-    pub user_id: usize,
+#[serde(rename_all = "camelCase")]
+pub struct Chat {
     pub text: String,
     pub sent_at: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(tag = "type", rename_all = "camelCase")]
-pub enum Content {
-    Chat {
-        payload: ChatMessage,
-    },
-    DrawInstruction {
-        x: i64,
-        y: i64,
-        color: String,
-        action: DrawAction,
-    },
+#[serde(rename_all = "camelCase")]
+pub struct Point { 
+    pub x: i64,
+    pub y: i64,
 }
 
-#[derive(Message, Serialize, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct DrawInstruction {
+    pub point: Point,
+    pub color: String,
+    // pub action: DrawAction,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub enum WidgetKind {
+    Sticky,
+    Rect,
+    Circle,
+    Star,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Widget {
+    pub id: String,
+    pub kind: WidgetKind,
+    pub x: i64,
+    pub y: i64,
+    pub width: i64,
+    pub height: i64,
+    pub fill: String,
+    pub stroke: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(tag = "type", rename_all = "camelCase")]
+pub enum Action {
+    Chat { payload: Chat },
+    Draw { payload: DrawInstruction },
+    Widget { payload: Widget },
+}
+
+#[derive(Message, Serialize, Clone, Debug)]
 #[rtype(result = "()")]
 pub struct Update {
     pub user_id: usize,
     pub space_id: usize,
     pub user_name: String,
-    pub content: Content,
+    pub action: Action,
+
+    #[serde(with = "serde_millis")]
     pub created_at: SystemTime,
 }
 

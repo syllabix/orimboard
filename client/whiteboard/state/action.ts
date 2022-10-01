@@ -1,3 +1,4 @@
+import { LineData, Point } from "whiteboard/drawing/line";
 import { ChatMessage } from "../chat";
 import { User } from "../user";
 import { WidgetData } from "../widget";
@@ -28,8 +29,17 @@ type AddWidget = {
 }
 
 type MoveWidget = {
-    type: "move-widget";
+    type: "widget";
     payload: WidgetData;
 }
 
-export type BoardUpdate = Connect | UserJoin | UserLeave | Chat | AddWidget | MoveWidget;
+type Draw = {
+    type: "draw";
+    payload: {
+        id: string,
+        point: Point
+        color: string,
+    }
+}
+
+export type BoardAction = Connect | UserJoin | UserLeave | Chat | AddWidget | MoveWidget | Draw;
