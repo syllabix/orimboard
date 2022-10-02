@@ -1,12 +1,12 @@
 use actix::{Actor, Addr, Context, Handler, Message, Recipient};
-use actix_web::{http::{StatusCode, header::ContentType}, web, HttpRequest, HttpResponse, ResponseError, body::BoxBody, Error};
+use actix_web::{http::{StatusCode, header::ContentType}, web, HttpRequest, HttpResponse, ResponseError, body::BoxBody, Error, Responder};
 use actix_web_actors::ws;
 use rand::Rng;
 use std::collections::HashMap;
 use derive_more::{Display, Error};
 
 use super::{
-    space::{Space, Update},
+    space::{Space, Update, Action, Widget},
     user::User,
 };
 
@@ -34,6 +34,13 @@ impl BoardServer {
     pub fn new() -> BoardServer {
         BoardServer {
             spaces: Default::default(),
+        }
+    }
+
+    pub fn get_board(&self, id: usize) -> Option<Vec<&Widget>> {
+        match self.spaces.get(&id) {
+            None => None,
+            Some(space) => Some(space.widgets.values().collect()),
         }
     }
 }
@@ -80,9 +87,17 @@ impl Handler<Disconnect> for BoardServer {
 impl Handler<Update> for BoardServer {
     type Result = ();
 
-    fn handle(&mut self, msg: Update, _ctx: &mut Self::Context) -> Self::Result {
+    fn handle(&mut self, mut msg: Update, _ctx: &mut Self::Context) -> Self::Result {
         // println!("board update {:?}", msg);
-        if let Some(space) = self.spaces.get(&msg.space_id) {
+        if let Some(space) = self.spaces.get_mut(&msg.space_id) {
+
+            // if update should be "persisted" let's upsert it
+            // into the space
+            if let Action::Widget { payload } = msg.action {
+                let res = space.upsert(payload);
+                msg.action = Action::Widget { payload: res.to_owned() }
+            }
+
             for (user_id, user) in space.users.iter() {
                 if msg.user_id != *user_id {
                     user.do_send(msg.clone())

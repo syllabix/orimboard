@@ -51,8 +51,6 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for User {
                     }
                 };
 
-                // println!("received action {:?}", action);
-
                 self.addr.do_send(Update {
                     user_id: self.user_id,
                     space_id: self.space_id,

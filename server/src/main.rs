@@ -29,9 +29,9 @@ async fn main() -> std::io::Result<()> {
                     .route("/{id}", web::get().to(handler::user::get)),
             )
             .service(
-                web::scope("/ws")
+                web::scope("/board")
                     .app_data(web::Data::new(board_server.clone()))
-                    .route("/{id}", web::get().to(board::server::start_up)),
+                    .route("/{id}/start", web::get().to(board::server::start_up)),
             )
     })
     .bind(("127.0.0.1", 8080))?

@@ -7,7 +7,7 @@ export const useSocket = (id: string, dispatch: Dispatch<BoardAction>): Updater 
     const ws: MutableRefObject<WebSocket | null> = useRef(null);
     useEffect(() => {
         if (typeof id === "undefined") return;
-        ws.current = new WebSocket("ws://localhost:8080/ws/" + id);
+        ws.current = new WebSocket("ws://localhost:8080/board/" + id + "/start");
 
         ws.current.onopen = () => {
             dispatch({
