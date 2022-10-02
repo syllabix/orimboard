@@ -24,6 +24,7 @@ export const Sketchpad: React.FC<Props> = ({ state, cursor = "default", children
         const pos = e.target.getStage()?.getPointerPosition();
         if (pos == null) return;
 
+        // TODO: all ids need to be set on the backend
         const id = new Date().getTime().toString();
 
         drawing.current = {
