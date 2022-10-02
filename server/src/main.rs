@@ -21,7 +21,6 @@ async fn main() -> std::io::Result<()> {
         App::new()
             .wrap(logger)
             .route("/healthz", web::get().to(handler::health_check))
-            .route("/board/{id}", web::get().to(handler::client::serve))
             .service(
                 web::scope("/user")
                     .app_data(web::Data::new(user_service.clone()))

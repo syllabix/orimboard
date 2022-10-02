@@ -3,7 +3,6 @@
 //! the handler module contains http
 //! handlers
 
-pub mod client;
 mod health_check;
 pub mod user;
 
