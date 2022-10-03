@@ -12,8 +12,8 @@ async fn main() -> std::io::Result<()> {
     std::env::set_var("RUST_BACKTRACE", "1");
     env_logger::init();
 
-    let user_service = service::user::Service::new();
-    let board_server = board::server::BoardServer::new().start();
+    let user_service = web::Data::new(service::user::Service::new());
+    let board_server = web::Data::new(board::server::BoardServer::new().start());
 
     HttpServer::new(move || {
         let logger = Logger::default();
@@ -23,14 +23,14 @@ async fn main() -> std::io::Result<()> {
             .route("/healthz", web::get().to(handler::health_check))
             .service(
                 web::scope("/user")
-                    .app_data(web::Data::new(user_service.clone()))
+                    .app_data(user_service.clone())
                     .route("", web::post().to(handler::user::create))
                     .route("", web::get().to(handler::user::get_all))
                     .route("/{id}", web::get().to(handler::user::get)),
             )
             .service(
                 web::scope("/board")
-                    .app_data(web::Data::new(board_server.clone()))
+                    .app_data(board_server.clone())
                     .route("/{id}/start", web::get().to(board::server::start_up)),
             )
     })
