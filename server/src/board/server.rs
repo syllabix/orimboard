@@ -7,7 +7,7 @@ use derive_more::{Display, Error};
 
 use super::{
     space::{Space, Update, Action, Widget},
-    user::User,
+    user::User, widget,
 };
 
 #[derive(Message)]
@@ -28,21 +28,23 @@ pub struct Disconnect {
 #[derive(Debug, Clone)]
 pub struct BoardServer {
     spaces: HashMap<usize, Space>,
+    widgets: Box<widget::Storage>,
 }
 
 impl BoardServer {
-    pub fn new() -> BoardServer {
+    pub fn new(widget_storage: Box<widget::Storage>) -> BoardServer {
         BoardServer {
             spaces: Default::default(),
+            widgets: widget_storage,
         }
     }
 
-    pub fn get_board(&self, id: usize) -> Option<Vec<&Widget>> {
-        match self.spaces.get(&id) {
-            None => None,
-            Some(space) => Some(space.widgets.values().collect()),
-        }
-    }
+    // pub fn get_board(&self, id: usize) -> Option<Vec<&Widget>> {
+    //     match self.spaces.get(&id) {
+    //         None => None,
+    //         Some(space) => Some(space.widgets.values().collect()),
+    //     }
+    // }
 }
 
 impl Actor for BoardServer {
@@ -94,7 +96,7 @@ impl Handler<Update> for BoardServer {
             // if update should be "persisted" let's upsert it
             // into the space
             if let Action::Widget { payload } = msg.action {
-                let res = space.upsert(payload);
+                let res = self.widgets.upsert(msg.space_id, payload);
                 msg.action = Action::Widget { payload: res.to_owned() }
             }
 

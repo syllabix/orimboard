@@ -39,7 +39,7 @@ impl Actor for User {
     }
 }
 
-impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for User {
+impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for User  {
     fn handle(&mut self, msg: Result<Message, ProtocolError>, ctx: &mut Self::Context) {
         match msg {
             Ok(ws::Message::Text(text)) => {

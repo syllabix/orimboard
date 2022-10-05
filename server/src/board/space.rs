@@ -86,15 +86,13 @@ pub struct Update {
 pub struct Space {
     _id: usize,
     pub users: HashMap<usize, Recipient<Update>>,
-    pub widgets: HashMap<String, Widget>
 }
 
 impl Space {
     pub fn new(id: usize) -> Space {
         Space {
             _id: id,
-            users: HashMap::new(),
-            widgets: HashMap::new(),
+            users: HashMap::new()
         }
     }
 
@@ -104,12 +102,5 @@ impl Space {
 
     pub fn unregister(&mut self, user_id: usize) -> Option<Recipient<Update>> {
         self.users.remove(&user_id)
-    }
-
-    // TODO: wasteful and expensive - please remove the clones
-    pub fn upsert(&mut self, widget: Widget) -> &Widget {
-        let id = widget.id.clone();
-        self.widgets.insert(id.clone(), widget);
-        return self.widgets.get(&id).unwrap()
     }
 }
