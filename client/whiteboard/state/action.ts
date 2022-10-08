@@ -29,6 +29,20 @@ type AddWidget = {
     payload: WidgetData;
 }
 
+type AddWidgets = {
+    type: "add-widgets";
+    payload: Array<WidgetData>;
+}
+
+type SetupState = {
+    type: "setup-state";
+    payload: {
+        widgets: Array<WidgetData>,
+        chat: Array<ChatMessage>,
+        line: Array<LineData>
+    };
+}
+
 type MoveWidget = {
     type: "widget";
     payload: WidgetData;
@@ -55,6 +69,8 @@ export type BoardAction =
     | UserLeave
     | Chat
     | AddWidget
+    | AddWidgets
     | MoveWidget
     | Draw
+    | SetupState
     | ToggleMode;

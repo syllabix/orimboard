@@ -39,7 +39,7 @@ impl Actor for User {
     }
 }
 
-impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for User {
+impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for User  {
     fn handle(&mut self, msg: Result<Message, ProtocolError>, ctx: &mut Self::Context) {
         match msg {
             Ok(ws::Message::Text(text)) => {
@@ -50,8 +50,6 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for User {
                         return;
                     }
                 };
-
-                // println!("received action {:?}", action);
 
                 self.addr.do_send(Update {
                     user_id: self.user_id,

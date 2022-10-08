@@ -6,15 +6,14 @@ import Whiteboard from '../../whiteboard';
 import { useSocket } from '../../whiteboard/socket/useSocket';
 import { BoardNav } from '../../components/navigation/board-nav';
 import { Messenger } from '../../components/chat/messenger';
-import Pallette, { PalletteMode } from 'components/pallette';
-import { useState } from 'react';
+import Pallette from 'components/pallette';
+import { loadBoardState } from 'api/board/loadBoardState';
 
 const WhiteboardPage: NextPage = () => {
-    let router = useRouter();
-    const { id } = router.query;
+    const { id } = useRouter().query as { id: string }
     const [state, dispatch] = useBoardState();
-    const updater = useSocket(id as string, dispatch)
-    // const [mode, setMode] = useState<PalletteMode>("select")
+    const updater = useSocket(id, dispatch)
+    loadBoardState(id, dispatch);
 
     return (
         <>
