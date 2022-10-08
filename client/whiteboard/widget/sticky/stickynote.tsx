@@ -4,7 +4,6 @@ import { WidgetActions, WidgetData } from "whiteboard/widget";
 import { Transformer as ITransformer } from 'konva/lib/shapes/Transformer';
 import { KonvaEventObject } from "konva/lib/Node";
 import { Rect as IRect } from 'konva/lib/shapes/Rect';
-import { Text as IText } from "konva/lib/shapes/Text";
 import { Html } from "react-konva-utils";
 import TextareaAutosize from 'react-textarea-autosize';
 
@@ -26,7 +25,7 @@ export const StickyNote: React.FC<WidgetData & WidgetActions> = ({
         if (selected && trRef.current && paperRef.current && textRef.current) {
             trRef.current.nodes([paperRef.current]);
             trRef.current.getLayer()?.batchDraw();
-            const end = props.text?.length || 0;
+            const end = props.text?.length || 1;
             textRef.current.setSelectionRange(end, end);
             textRef.current.focus();
         }

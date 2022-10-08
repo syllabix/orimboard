@@ -29,6 +29,11 @@ type AddWidget = {
     payload: WidgetData;
 }
 
+type AddWidgets = {
+    type: "add-widgets";
+    payload: Array<WidgetData>;
+}
+
 type MoveWidget = {
     type: "widget";
     payload: WidgetData;
@@ -55,6 +60,7 @@ export type BoardAction =
     | UserLeave
     | Chat
     | AddWidget
+    | AddWidgets
     | MoveWidget
     | Draw
     | ToggleMode;

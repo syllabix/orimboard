@@ -4,6 +4,8 @@ import { ChatMessage } from "../chat";
 import { User } from "../user";
 import { WidgetData, WidgetKind } from "../widget";
 
+export type WidgetState = { [id: string]: WidgetData; }
+
 type BoardState = {
     loading: boolean;
     connecting: boolean;
@@ -12,7 +14,7 @@ type BoardState = {
         [id: string]: User,
     }
     chat: Array<ChatMessage>;
-    widgets: { [id: string]: WidgetData; };
+    widgets: WidgetState;
     lines: Array<LineData>
 }
 
