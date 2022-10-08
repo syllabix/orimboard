@@ -1,13 +1,17 @@
-use actix::{Actor, Addr, Context, Handler, Message, Recipient, MessageResponse};
-use actix_web::{http::{StatusCode, header::ContentType}, web, HttpRequest, HttpResponse, ResponseError, body::BoxBody, Error, Responder};
+use actix::{Actor, Addr, Context, Handler, Message, MessageResponse, Recipient};
+use actix_web::{
+    body::BoxBody,
+    http::{header::ContentType, StatusCode},
+    web, Error, HttpRequest, HttpResponse, Responder, ResponseError,
+};
 use actix_web_actors::ws;
+use derive_more::{Display, Error};
 use rand::Rng;
 use serde::Serialize;
 use std::collections::HashMap;
-use derive_more::{Display, Error};
 
 use super::{
-    space::{Space, Update, Action, Widget},
+    space::{Chat, Space, Update, Widget, DrawnLine},
     user::User,
 };
 
@@ -31,6 +35,8 @@ pub struct Disconnect {
 pub struct SpaceInfo {
     pub space_id: usize,
     pub widgets: Vec<Widget>,
+    pub chat: Vec<Chat>,
+    pub line: Vec<DrawnLine>,
 }
 
 #[derive(Message)]
@@ -95,15 +101,8 @@ impl Handler<Update> for BoardServer {
     type Result = ();
 
     fn handle(&mut self, mut msg: Update, _ctx: &mut Self::Context) -> Self::Result {
-        // println!("board update {:?}", msg);
         if let Some(space) = self.spaces.get_mut(&msg.space_id) {
-
-            // if update should be "persisted" let's upsert it
-            // into the space
-            if let Action::Widget { payload } = msg.action {
-                let res = space.upsert(payload);
-                msg.action = Action::Widget { payload: res }
-            }
+            msg.action = space.upsert(msg.action);
 
             for (user_id, user) in space.users.iter() {
                 if msg.user_id != *user_id {
@@ -119,12 +118,21 @@ impl Handler<SpaceInfoRequest> for BoardServer {
 
     fn handle(&mut self, msg: SpaceInfoRequest, _ctx: &mut Self::Context) -> Self::Result {
         match self.spaces.get(&msg.space_id) {
-            Some(space) => SpaceInfo { space_id: msg.space_id, widgets: space.get_widgets() },
-            None => SpaceInfo { space_id: msg.space_id, widgets: vec![] },
+            Some(space) => SpaceInfo {
+                space_id: msg.space_id,
+                widgets: space.get_widgets(),
+                chat: space.get_chat_history(),
+                line: space.get_drawings(),
+            },
+            None => SpaceInfo {
+                space_id: msg.space_id,
+                widgets: vec![],
+                chat: vec![],
+                line: vec![],
+            },
         }
     }
 }
-
 
 #[derive(Debug, Display, Error)]
 pub enum ServerError {
@@ -175,10 +183,13 @@ pub async fn connect(
     )
 }
 
-pub async fn get_widgets(space_id: web::Path<usize>, server: web::Data<Addr<BoardServer>>,) -> impl Responder {
+pub async fn get_widgets(
+    space_id: web::Path<usize>,
+    server: web::Data<Addr<BoardServer>>,
+) -> impl Responder {
     let space_id = space_id.into_inner();
-    match server.send(SpaceInfoRequest{ space_id }).await {
+    match server.send(SpaceInfoRequest { space_id }).await {
         Ok(result) => HttpResponse::Ok().json(result),
-        Err(_) => HttpResponse::InternalServerError().finish()
+        Err(_) => HttpResponse::InternalServerError().finish(),
     }
 }

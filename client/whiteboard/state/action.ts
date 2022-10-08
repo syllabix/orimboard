@@ -34,6 +34,15 @@ type AddWidgets = {
     payload: Array<WidgetData>;
 }
 
+type SetupState = {
+    type: "setup-state";
+    payload: {
+        widgets: Array<WidgetData>,
+        chat: Array<ChatMessage>,
+        line: Array<LineData>
+    };
+}
+
 type MoveWidget = {
     type: "widget";
     payload: WidgetData;
@@ -63,4 +72,5 @@ export type BoardAction =
     | AddWidgets
     | MoveWidget
     | Draw
+    | SetupState
     | ToggleMode;

@@ -94,6 +94,24 @@ const reducer = (state: BoardState, action: BoardAction): BoardState => {
                     }
             }
 
+        case "setup-state":
+            const widgets = action.payload.widgets.reduce((prev, cur) => {
+                return {
+                    ...prev,
+                    ...{ [cur.id]: cur }
+                }
+            }, {} as WidgetState)
+
+            return {
+                ...state,
+                chat: action.payload.chat,
+                lines: action.payload.line,
+                widgets: {
+                    ...state.widgets,
+                    ...widgets
+                }
+            }
+
         default:
             return state
     }
