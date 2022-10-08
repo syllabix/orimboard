@@ -11,7 +11,7 @@ use serde::Serialize;
 use std::collections::HashMap;
 
 use super::{
-    space::{Action, Chat, DrawInstruction, Space, Update, Widget, DrawnLine},
+    space::{Chat, Space, Update, Widget, DrawnLine},
     user::User,
 };
 
