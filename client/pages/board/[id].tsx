@@ -7,13 +7,13 @@ import { useSocket } from '../../whiteboard/socket/useSocket';
 import { BoardNav } from '../../components/navigation/board-nav';
 import { Messenger } from '../../components/chat/messenger';
 import Pallette from 'components/pallette';
-import { loadWidgets } from 'api/board/useWidgets';
+import { loadBoardState } from 'api/board/loadBoardState';
 
 const WhiteboardPage: NextPage = () => {
     const { id } = useRouter().query as { id: string }
     const [state, dispatch] = useBoardState();
     const updater = useSocket(id, dispatch)
-    loadWidgets(id, dispatch);
+    loadBoardState(id, dispatch);
 
     return (
         <>
