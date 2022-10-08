@@ -5,6 +5,7 @@ use actix::prelude::*;
 
 use serde::{Deserialize, Serialize};
 
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub enum DrawAction {
@@ -86,13 +87,15 @@ pub struct Update {
 pub struct Space {
     _id: usize,
     pub users: HashMap<usize, Recipient<Update>>,
+    widgets: HashMap<String, Widget>
 }
 
 impl Space {
     pub fn new(id: usize) -> Space {
         Space {
             _id: id,
-            users: HashMap::new()
+            users: HashMap::new(),
+            widgets: HashMap::new(),
         }
     }
 
@@ -102,5 +105,15 @@ impl Space {
 
     pub fn unregister(&mut self, user_id: usize) -> Option<Recipient<Update>> {
         self.users.remove(&user_id)
+    }
+
+    pub fn upsert(&mut self, widget: Widget) -> Widget {
+        let id = widget.id.clone();
+        self.widgets.insert(id.clone(), widget);
+        self.widgets.get(&id).unwrap().to_owned()
+    }
+
+    pub fn get_widgets(&self) -> Vec<Widget> {
+        self.widgets.values().cloned().collect()
     }
 }

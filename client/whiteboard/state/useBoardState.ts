@@ -1,6 +1,7 @@
 import { useReducer } from 'react';
 import { LineData } from 'whiteboard/drawing/line';
-import BoardState from '.';
+import { WidgetData } from 'whiteboard/widget';
+import BoardState, { WidgetState } from '.';
 import { BoardAction } from './action';
 
 const initialState: BoardState = {
@@ -42,6 +43,21 @@ const reducer = (state: BoardState, action: BoardAction): BoardState => {
             return {
                 ...state,
                 mode: action.payload
+            }
+
+        case 'add-widgets':
+            const update = action.payload.reduce((prev, cur) => {
+                return {
+                    ...prev,
+                    ...{ [cur.id]: cur }
+                }
+            }, {} as WidgetState)
+            return {
+                ...state,
+                widgets: {
+                    ...state.widgets,
+                    ...update
+                }
             }
 
         case 'widget':
