@@ -1,13 +1,15 @@
 import { Dispatch, MutableRefObject, useEffect, useRef } from "react";
 import { BoardAction } from "../state/action";
+import getConfig from "next/config";
 
 type Updater = (update: BoardAction) => void
 
 export const useSocket = (id: string, dispatch: Dispatch<BoardAction>): Updater => {
+    const { publicRuntimeConfig } = getConfig();
     const ws: MutableRefObject<WebSocket | null> = useRef(null);
     useEffect(() => {
         if (typeof id === "undefined") return;
-        ws.current = new WebSocket(`ws://${process.env.NEXT_PUBLIC_API_HOSTNAME}/v1/board/${id}/connect`);
+        ws.current = new WebSocket(`${publicRuntimeConfig.BOARD_SERVER_PATH}/v1/board/${id}/connect`);
 
         ws.current.onopen = () => {
             dispatch({

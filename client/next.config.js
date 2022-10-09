@@ -4,7 +4,8 @@ const nextConfig = {
   swcMinify: true,
   output: 'standalone',
   publicRuntimeConfig: {
-    API_URL: "http://localhost:8080",
+    BOARD_SERVER_PATH: process.env.BOARD_SERVER_PATH,
+    API_SERVER_PATH: process.env.API_SERVER_PATH,
   }
 }
 

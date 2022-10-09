@@ -14,6 +14,12 @@ async fn main() -> std::io::Result<()> {
     std::env::set_var("RUST_BACKTRACE", "1");
     env_logger::init();
 
+    let host = std::env::var("HOST").unwrap_or("127.0.0.1".to_string());
+    let port = std::env::var("PORT")
+        .map(|ps| ps.parse::<u16>().expect("Invalid PORT specified"))
+        .unwrap_or(8080);
+    log::info!("Starting board server at {}:{}...", &host, &port);
+
     let board_server = board::server::BoardServer::new();
     let board_server_addr = web::Data::new(board_server.start());
 
@@ -21,14 +27,7 @@ async fn main() -> std::io::Result<()> {
         let logger = Logger::default();
 
         App::new()
-            .wrap(
-                Cors::default()
-                    .allowed_origin("http://localhost:3000")
-                    .allowed_methods(vec!["GET", "POST"])
-                    .allow_any_header()
-                    .supports_credentials()
-                    .max_age(3600),
-            )
+            .wrap(cors_config())
             .wrap(logger)
             .route("/healthz", web::get().to(handler::health_check))
             .service(
@@ -38,7 +37,19 @@ async fn main() -> std::io::Result<()> {
                     .route("/{id}/widgets", web::get().to(board::server::get_widgets)),
             )
     })
-    .bind(("0.0.0.0", 8080))?
+    .bind((host, port))?
     .run()
     .await
+}
+
+fn cors_config() -> Cors {
+    let cors_allow_origin = std::env::var("CORS_ALLOW_ORIGIN")
+        .unwrap_or("http://localhost:3000".to_string());
+
+        Cors::default()
+        .allowed_origin(cors_allow_origin.as_str())
+        .allowed_methods(vec!["GET", "POST"])
+        .allow_any_header()
+        .supports_credentials()
+        .max_age(3600)
 }

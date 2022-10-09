@@ -7,14 +7,14 @@ metadata:
     # https://kubernetes.github.io/ingress-nginx/user-guide/miscellaneous/#websockets 
     nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
     nginx.ingress.kubernetes.io/proxy-semd-timeout: "3600"
-    nginx.ingress.kubernetes.io/rewrite-target: /ws
+    nginx.ingress.kubernetes.io/rewrite-target: /$1
   namespace: board
 spec:
   rules:
     - host: orimboard.io
       http:
         paths:
-          - path: /api/ws
+          - path: /ws/(.+)
             pathType: Prefix
             backend:
               service:

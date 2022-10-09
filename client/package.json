@@ -9,7 +9,6 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "autoprefixer": "^10.4.12",
     "axios": "^1.1.2",
     "daisyui": "^2.31.0",
     "formik": "^2.2.9",
