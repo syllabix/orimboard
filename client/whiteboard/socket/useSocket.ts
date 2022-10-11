@@ -4,8 +4,9 @@ import getConfig from "next/config";
 
 type Updater = (update: BoardAction) => void
 
+const { publicRuntimeConfig } = getConfig();
+
 export const useSocket = (id: string, dispatch: Dispatch<BoardAction>): Updater => {
-    const { publicRuntimeConfig } = getConfig();
     const ws: MutableRefObject<WebSocket | null> = useRef(null);
     useEffect(() => {
         if (typeof id === "undefined") return;
