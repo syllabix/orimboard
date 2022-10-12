@@ -22,8 +22,7 @@ class APIClient {
 }
 
 const { publicRuntimeConfig } = getConfig();
-const basePath = publicRuntimeConfig.API_URL || "http://localhost:8080";
 
-const Client = new APIClient(new Http(provider(basePath)));
+const Client = new APIClient(new Http(provider(publicRuntimeConfig.API_SERVER_PATH)));
 
 export default Client;

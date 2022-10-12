@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: board-server
+  name: board-server
+  namespace: board
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: board-server
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: board-server
+    spec:
+      containers:
+      - image: orim/board-server:latest
+        name: board-server
+        imagePullPolicy: IfNotPresent

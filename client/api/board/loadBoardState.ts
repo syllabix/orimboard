@@ -1,6 +1,5 @@
 import Client from "api/client";
 import { Dispatch, useEffect } from "react";
-import useSWR from "swr";
 import { ChatMessage } from "whiteboard/chat";
 import { LineData } from "whiteboard/drawing/line";
 import { BoardAction } from "whiteboard/state/action";

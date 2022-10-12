@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: site
+  name: site
+  namespace: frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: site
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: site
+    spec:
+      containers:
+      - image: orim/client:latest
+        name: site
+        imagePullPolicy: IfNotPresent
