@@ -11,8 +11,6 @@ to experiment with implementing latency sensitive web applications with Rust and
 1. [Install Rust](https://www.rust-lang.org/tools/install) ( >= rustc 1.62.0 )
 2. [Install Node.js](https://nodejs.org/en/download/current/) (>= v18.9.0)
 
-
-
 ```
 ## start up the server
 make run.server
@@ -33,11 +31,11 @@ orim can run on Kubernetes locally with `skaffold` and `minikube`. This setup wa
 1. Start and configure `minikube`:
 
 ```
-minikube delete # optional - deletes old minikube setup if exists. 
+minikube delete # optional - deletes old minikube setup if exists.
 minikube start
 minikube addons enable ingress
 ```
-Note: On Mac, we need to use `minikube start --driver=virtualbox`, because networking with default `docker` driver is mess and we need to use multiple tunnels, that need to run on background :/
+Note: On Mac, we need to use `minikube start --driver=virtualbox`, because networking with the default `docker` driver can be quite challenging and we need to use multiple tunnels that need to run on background :/
 
 2. Add IP address for `orimboard.io` into the `/etc/hosts` file (needs administrator access):
 
@@ -53,7 +51,6 @@ minikube ip # Returns the IP address of the minikube VM
 skaffold dev
 ```
 
-
 Skaffold will build the docker images using the `docker` host on `minikube`, and then deploy kubernetes resourcess. It will need some time for the deployment to stabilize.
 
 4. Access http://orimboard.io from your favorite browser!
@@ -62,12 +59,10 @@ Skaffold will build the docker images using the `docker` host on `minikube`, and
 
 ## known issues
 
-1. data persistence has not been setup. while state while be sync'd across all active sessions, refreshing the browser will reset the white board
-2. shape rotation transforms do not sync across state yet
+1. shape rotation transforms do not sync across state yet
 
 ## roadmap
 
-1. setup data persistence and storage.
-2. support rotation transforms for shapes
-3. setup basic user and auth system
-4. run on agones/k8s
+1. support rotation transforms for shapes
+2. setup basic user and auth system
+3. run on agones/k8s

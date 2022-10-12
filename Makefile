@@ -24,6 +24,7 @@ help:
 
 ## Start up the orim client
 run.client:
+	cd client && npm install
 	cd client && npm run dev
 
 ## Start up the orim board server backend

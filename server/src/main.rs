@@ -8,6 +8,8 @@ use actix_cors::Cors;
 use actix_web::middleware::Logger;
 use actix_web::{web, App, HttpServer};
 
+use crate::board::server::BoardServer;
+
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     std::env::set_var("RUST_LOG", "debug");
@@ -20,8 +22,7 @@ async fn main() -> std::io::Result<()> {
         .unwrap_or(8080);
     log::info!("Starting board server at {}:{}...", &host, &port);
 
-    let board_server = board::server::BoardServer::new();
-    let board_server_addr = web::Data::new(board_server.start());
+    let board_server = web::Data::new(BoardServer::new().start());
 
     HttpServer::new(move || {
         let logger = Logger::default();
@@ -32,7 +33,7 @@ async fn main() -> std::io::Result<()> {
             .route("/healthz", web::get().to(handler::health_check))
             .service(
                 web::scope("/v1/board")
-                    .app_data(board_server_addr.clone())
+                    .app_data(board_server.clone())
                     .route("/{id}/connect", web::get().to(board::server::connect))
                     .route("/{id}/widgets", web::get().to(board::server::get_widgets)),
             )
@@ -43,10 +44,10 @@ async fn main() -> std::io::Result<()> {
 }
 
 fn cors_config() -> Cors {
-    let cors_allow_origin = std::env::var("CORS_ALLOW_ORIGIN")
-        .unwrap_or("http://localhost:3000".to_string());
+    let cors_allow_origin =
+        std::env::var("CORS_ALLOW_ORIGIN").unwrap_or("http://localhost:3000".to_string());
 
-        Cors::default()
+    Cors::default()
         .allowed_origin(cors_allow_origin.as_str())
         .allowed_methods(vec!["GET", "POST"])
         .allow_any_header()
