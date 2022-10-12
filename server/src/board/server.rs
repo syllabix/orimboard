@@ -66,7 +66,7 @@ impl Handler<Connect> for BoardServer {
     type Result = ();
 
     fn handle(&mut self, msg: Connect, _ctx: &mut Self::Context) -> Self::Result {
-        println!(
+        log::info!(
             "user {} connecting to space {}",
             &msg.user_id, &msg.space_id
         );
@@ -86,7 +86,7 @@ impl Handler<Disconnect> for BoardServer {
     type Result = ();
 
     fn handle(&mut self, msg: Disconnect, _ctx: &mut Self::Context) -> Self::Result {
-        println!(
+        log::info!(
             "user {} disconnecting from space {}",
             &msg.user_id, &msg.space_id
         );
