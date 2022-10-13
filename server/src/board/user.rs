@@ -46,7 +46,7 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for User  {
                 let action: Action = match serde_json::from_slice(text.as_bytes()) {
                     Ok(c) => c,
                     Err(e) => {
-                        println!("ouch.... {:?}", e);
+                        log::error!("board action not supported: {:?}", e);
                         return;
                     }
                 };
