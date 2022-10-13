@@ -19,7 +19,7 @@ pub enum Error {
     NotFound,
 
     #[display(fmt = "The email that you are trying to register an account with is already in use")]
-    EmailAlreadyInUse,
+    UsernameTaken,
 
     #[display(fmt = "An unexpected error occurred. Sorry...")]
     SystemFailure,
@@ -29,7 +29,7 @@ impl ResponseError for Error {
     fn status_code(&self) -> StatusCode {
         match self {
             Error::NotFound => StatusCode::NOT_FOUND,
-            Error::EmailAlreadyInUse => StatusCode::CONFLICT,
+            Error::UsernameTaken => StatusCode::CONFLICT,
             Error::SystemFailure => StatusCode::INTERNAL_SERVER_ERROR,
         }
     }
@@ -102,7 +102,7 @@ impl Service {
             Ok(data) => Ok(User::from(data)),
             Err(err) => Err(match err {
                 user::Error::NotFound => Error::NotFound,
-                user::Error::EmailInUse => Error::EmailAlreadyInUse,
+                user::Error::EmailInUse => Error::UsernameTaken,
                 user::Error::SystemFailure => Error::SystemFailure,
             }),
         }
@@ -113,7 +113,7 @@ impl Service {
             Ok(data) => Ok(User::from(data)),
             Err(err) => Err(match err {
                 user::Error::NotFound => Error::NotFound,
-                user::Error::EmailInUse => Error::EmailAlreadyInUse,
+                user::Error::EmailInUse => Error::UsernameTaken,
                 user::Error::SystemFailure => Error::SystemFailure,
             }),
         }
@@ -124,7 +124,7 @@ impl Service {
             Ok(result) => Ok(result.into_iter().map(User::from).collect()),
             Err(err) => Err(match err {
                 user::Error::NotFound => Error::NotFound,
-                user::Error::EmailInUse => Error::EmailAlreadyInUse,
+                user::Error::EmailInUse => Error::UsernameTaken,
                 user::Error::SystemFailure => Error::SystemFailure,
             }),
         }

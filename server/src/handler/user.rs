@@ -12,14 +12,14 @@ pub async fn create(
     };
 }
 
-pub async fn get(path: web::Path<u32>, svc: web::Data<user::Service>) -> impl Responder {
+pub async fn get(path: web::Path<u32>, svc: web::Data<user::Service>) -> HttpResponse {
     match svc.get(path.into_inner()).await {
         Ok(user) => HttpResponse::Ok().json(user),
         Err(e) => HttpResponse::from_error(e),
     }
 }
 
-pub async fn get_all(svc: web::Data<user::Service>) -> impl Responder {
+pub async fn get_all(svc: web::Data<user::Service>) -> HttpResponse {
     match svc.get_all().await {
         Ok(users) => HttpResponse::Ok().json(users),
         Err(e) => HttpResponse::from_error(e),
