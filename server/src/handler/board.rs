@@ -1,3 +1,5 @@
+use std::time::Instant;
+
 use actix_web::{
     body::BoxBody,
     http::{header::ContentType, StatusCode},
@@ -84,6 +86,7 @@ pub async fn connect(
             name: user.name,
             color: user.color,
             addr: space.clone(),
+            heartbeat: Instant::now(),
         },
         &req,
         stream,
