@@ -10,8 +10,11 @@ import Pallette from 'components/pallette';
 import { loadBoardState } from 'api/board/loadBoardState';
 import { securePageLoad } from 'api/auth/securePageLoad';
 
-const WhiteboardPage: NextPage = () => {
-    const { id } = useRouter().query as { id: string }
+type Props = {
+    id: string
+}
+
+const WhiteboardPage: NextPage<Props> = ({ id }) => {
     const [state, dispatch] = useBoardState();
     const updater = useSocket(id, dispatch)
     loadBoardState(id, dispatch);
@@ -36,7 +39,13 @@ const WhiteboardPage: NextPage = () => {
 }
 
 export async function getServerSideProps(ctx: NextPageContext) {
-    return securePageLoad(ctx);
+    const { id } = ctx.query as { id: string }
+    await securePageLoad(ctx);
+    return {
+        props: {
+            id
+        }
+    }
 }
 
 export default WhiteboardPage

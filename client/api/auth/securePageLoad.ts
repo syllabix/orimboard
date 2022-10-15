@@ -2,7 +2,7 @@ import { NextPageContext } from "next";
 import { redirect } from "api/auth/redirect";
 import AuthManager from "api/auth/manager";
 
-export type PageProps = {
+export type SecurityProps = {
   props: {
     signedUp: boolean;
   };
@@ -12,7 +12,7 @@ export type PageProps = {
 // exported by pages that requires authorization
 export const securePageLoad = async (
   ctx: NextPageContext
-): Promise<PageProps> => {
+): Promise<SecurityProps> => {
   const { req } = ctx;
   if (req) {
     let result = AuthManager.setAuthFromRequest(req);

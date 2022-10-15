@@ -9,7 +9,6 @@ const { publicRuntimeConfig } = getConfig();
 export const useSocket = (id: string, dispatch: Dispatch<BoardAction>): Updater => {
     const ws: MutableRefObject<WebSocket | null> = useRef(null);
     useEffect(() => {
-        if (typeof id === "undefined") return;
         ws.current = new WebSocket(`${publicRuntimeConfig.BOARD_SERVER_PATH}/v1/board/${id}/connect`);
 
         ws.current.onopen = () => {
