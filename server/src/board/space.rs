@@ -1,101 +1,18 @@
 use std::collections::HashMap;
-use std::time::SystemTime;
 
 use actix::prelude::*;
 
-use serde::{Deserialize, Serialize};
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub enum DrawAction {
-    Start,
-    Stroke,
-    Finish,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct Chat {
-    pub text: String,
-    pub sent_at: String,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct Point {
-    pub x: i64,
-    pub y: i64,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct DrawInstruction {
-    pub id: String,
-    pub point: Point,
-    pub color: String,
-    pub action: DrawAction,
-}
-
-#[derive(Debug, Clone, Serialize)]
-pub struct DrawnLine {
-    pub id: String,
-    pub color: String,
-    pub points: Vec<i64>,
-    pub action: DrawAction,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub enum WidgetKind {
-    Sticky,
-    Rect,
-    Circle,
-    Star,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct Widget {
-    pub id: String,
-    pub kind: WidgetKind,
-    pub x: f64,
-    pub y: f64,
-    pub width: f64,
-    pub height: f64,
-    pub fill: String,
-    pub stroke: String,
-    pub draggable: bool,
-
-    #[serde(default)]
-    pub text: String,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(tag = "type", rename_all = "camelCase")]
-pub enum Action {
-    Chat { payload: Chat },
-    Draw { payload: DrawInstruction },
-    Widget { payload: Widget },
-}
-
-#[derive(Message, Serialize, Clone, Debug)]
-#[rtype(result = "()")]
-pub struct Update {
-    pub user_id: usize,
-    pub space_id: usize,
-    pub user_name: String,
-    pub action: Action,
-
-    #[serde(with = "serde_millis")]
-    pub created_at: SystemTime,
-}
+use super::{
+    component::{ChatMessage, DrawnLine, Widget},
+    message::{Action, Update},
+};
 
 #[derive(Debug, Clone)]
 pub struct Space {
     _id: usize,
     pub users: HashMap<usize, Recipient<Update>>,
     widgets: HashMap<String, Widget>,
-    chat: Vec<Chat>,
+    chat: Vec<ChatMessage>,
     lines: HashMap<String, DrawnLine>,
 }
 
@@ -151,7 +68,7 @@ impl Space {
         self.widgets.values().cloned().collect()
     }
 
-    pub fn get_chat_history(&self) -> Vec<Chat> {
+    pub fn get_chat_history(&self) -> Vec<ChatMessage> {
         self.chat.iter().cloned().collect()
     }
 

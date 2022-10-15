@@ -1,41 +1,11 @@
-use actix::{Actor, Context, Handler, Message, MessageResponse, Recipient};
+use actix::{Actor, Context, Handler};
 
-use serde::Serialize;
 use std::collections::HashMap;
 
 use super::{
-    space::{Chat, Space, Update, Widget, DrawnLine},
+    message::{Connect, Disconnect, SpaceInfo, SpaceInfoRequest, Update},
+    space::Space,
 };
-
-#[derive(Message)]
-#[rtype(result = "()")]
-pub struct Connect {
-    pub user_id: usize,
-    pub space_id: usize,
-    pub addr: Recipient<Update>,
-}
-
-#[derive(Message)]
-#[rtype(result = "()")]
-pub struct Disconnect {
-    pub user_id: usize,
-    pub space_id: usize,
-}
-
-#[derive(MessageResponse, Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct SpaceInfo {
-    pub space_id: usize,
-    pub widgets: Vec<Widget>,
-    pub chat: Vec<Chat>,
-    pub line: Vec<DrawnLine>,
-}
-
-#[derive(Message)]
-#[rtype(result = "SpaceInfo")]
-pub struct SpaceInfoRequest {
-    pub space_id: usize,
-}
 
 #[derive(Debug, Clone)]
 pub struct BoardServer {
@@ -60,7 +30,8 @@ impl Handler<Connect> for BoardServer {
     fn handle(&mut self, msg: Connect, _ctx: &mut Self::Context) -> Self::Result {
         log::info!(
             "user {} connecting to space {}",
-            &msg.user_id, &msg.space_id
+            &msg.user_id,
+            &msg.space_id
         );
 
         if let Some(space) = self.spaces.get_mut(&msg.space_id) {
@@ -80,7 +51,8 @@ impl Handler<Disconnect> for BoardServer {
     fn handle(&mut self, msg: Disconnect, _ctx: &mut Self::Context) -> Self::Result {
         log::info!(
             "user {} disconnecting from space {}",
-            &msg.user_id, &msg.space_id
+            &msg.user_id,
+            &msg.space_id
         );
 
         if let Some(space) = self.spaces.get_mut(&msg.space_id) {

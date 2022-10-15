@@ -1,5 +1,3 @@
-
-
 use actix::Addr;
 use actix_web::{
     body::BoxBody,
@@ -10,10 +8,7 @@ use actix_web_actors::ws;
 use derive_more::{Display, Error};
 
 use crate::{
-    board::{
-        server::{BoardServer, SpaceInfoRequest},
-        user::User,
-    },
+    board::{message::SpaceInfoRequest, server::BoardServer, user::User},
     user,
 };
 
