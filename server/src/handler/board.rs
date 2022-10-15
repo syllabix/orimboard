@@ -81,7 +81,6 @@ pub async fn connect(
     ws::start(
         User {
             user_id: user.id.into(),
-            space_id,
             name: user.name,
             color: user.color,
             addr: space.clone(),

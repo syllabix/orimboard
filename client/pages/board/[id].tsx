@@ -7,8 +7,9 @@ import { useSocket } from '../../whiteboard/socket/useSocket';
 import { BoardNav } from '../../components/navigation/board-nav';
 import { Messenger } from '../../components/chat/messenger';
 import Pallette from 'components/pallette';
-import { loadBoardState } from 'api/board/loadBoardState';
+import { useBoardStateLoader } from 'api/board/loadBoardState';
 import { securePageLoad } from 'api/auth/securePageLoad';
+import { useEffect } from 'react';
 
 type Props = {
     id: string
@@ -16,8 +17,20 @@ type Props = {
 
 const WhiteboardPage: NextPage<Props> = ({ id }) => {
     const [state, dispatch] = useBoardState();
-    const updater = useSocket(id, dispatch)
-    loadBoardState(id, dispatch);
+    const updater = useSocket(id, dispatch);
+    const { data, isLoading } = useBoardStateLoader(id);
+
+    useEffect(() => {
+        dispatch({
+            type: "setup-state",
+            payload: {
+                widgets: data.widgets,
+                chat: data.chat,
+                lines: data.lines,
+                users: data.users,
+            }
+        })
+    }, [data])
 
     return (
         <>
@@ -32,7 +45,7 @@ const WhiteboardPage: NextPage<Props> = ({ id }) => {
             </Head>
             <BoardNav boardname="My Awesome Board" />
             <Pallette onUpdate={updater} />
-            <Messenger messages={state.chat} send={updater} />
+            <Messenger users={state.users} messages={state.chat} send={updater} />
             <Whiteboard state={state} dispatch={updater} />
         </>
     )

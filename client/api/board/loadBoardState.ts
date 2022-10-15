@@ -1,15 +1,18 @@
 import Client from "api/client";
 import { Dispatch, useEffect } from "react";
+import useSWR from "swr";
 import { ChatMessage } from "whiteboard/chat";
 import { LineData } from "whiteboard/drawing/line";
 import { BoardAction } from "whiteboard/state/action";
+import { User } from "whiteboard/user";
 import { WidgetData } from "whiteboard/widget";
 
 export interface BoardState {
     spaceId: number;
     widgets: Widget[];
     chat: Array<ChatMessage>;
-    line: Array<LineData>
+    lines: Array<LineData>
+    users: Array<User>
 }
 export interface Widget {
     id: string;
@@ -26,17 +29,19 @@ export interface Widget {
 
 export type WidgetKind = "sticky" | "rect" | "circle" | "star";
 
-export const loadBoardState = (id: string, dispatch: Dispatch<BoardAction>) => {
-    useEffect(() => {
-        if (typeof id === "undefined") return;
-        Client.get<BoardState>(`/v1/board/${id}/widgets`)
-            .then(res => dispatch({
-                type: "setup-state",
-                payload: {
-                    widgets: res?.data.widgets || [] as Array<WidgetData>,
-                    chat: res?.data.chat || [] as Array<ChatMessage>,
-                    line: res?.data.line || [] as Array<LineData>,
-                }
-            }))
-    }, [id])
+export const useBoardStateLoader = (id: string) => {
+    const { data, error } = useSWR(`/v1/board/${id}/widgets`, (url) =>
+        Client.get<BoardState>(url)
+    );
+
+    return {
+        data: data?.data || {
+            widgets: data?.data.widgets || [] as Array<WidgetData>,
+            chat: data?.data.chat || [] as Array<ChatMessage>,
+            lines: data?.data.lines || [] as Array<LineData>,
+            users: data?.data.users || [] as Array<User>,
+        },
+        isLoading: !error && !data,
+        error: error,
+    };
 }

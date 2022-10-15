@@ -1,6 +1,6 @@
-use actix::prelude::*;
-
 use serde::{Deserialize, Serialize};
+
+use super::user;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -65,4 +65,12 @@ pub struct Widget {
 
     #[serde(default)]
     pub text: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct UserProfile {
+    pub id: user::ID,
+    pub name: String,
+    pub color: String,
 }

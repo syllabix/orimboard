@@ -5,6 +5,7 @@
 
 mod component;
 mod registry;
+mod storage;
 
 pub mod message;
 pub mod space;
