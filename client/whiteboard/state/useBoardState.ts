@@ -1,7 +1,7 @@
 import { useReducer } from 'react';
 import { LineData } from 'whiteboard/drawing/line';
 import { WidgetData } from 'whiteboard/widget';
-import BoardState, { WidgetState } from '.';
+import BoardState, { UserState, WidgetState } from '.';
 import { BoardAction } from './action';
 
 const initialState: BoardState = {
@@ -31,7 +31,7 @@ const reducer = (state: BoardState, action: BoardAction): BoardState => {
                     ]
                 }
             }
-        case 'user-join':
+        case 'join':
             return {
                 ...state,
                 users: {
@@ -102,13 +102,24 @@ const reducer = (state: BoardState, action: BoardAction): BoardState => {
                 }
             }, {} as WidgetState)
 
+            const users = action.payload.users.reduce((prev, cur) => {
+                return {
+                    ...prev,
+                    ...{ [cur.id]: cur }
+                }
+            }, {} as UserState)
+
             return {
                 ...state,
                 chat: action.payload.chat,
-                lines: action.payload.line,
+                lines: action.payload.lines,
                 widgets: {
                     ...state.widgets,
                     ...widgets
+                },
+                users: {
+                    ...state.users,
+                    ...users,
                 }
             }
 

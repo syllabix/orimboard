@@ -4,21 +4,21 @@ use serde::{Deserialize, Serialize};
 use std::time::SystemTime;
 
 use super::{
-    component::{ChatMessage, DrawInstruction, DrawnLine, Widget},
-    space,
+    component::{ChatMessage, DrawInstruction, DrawnLine, UserProfile, Widget},
+    space, user,
 };
 
 #[derive(Message)]
 #[rtype(result = "()")]
 pub struct Connect {
-    pub user_id: usize,
+    pub user: UserProfile,
     pub addr: Recipient<Update>,
 }
 
 #[derive(Message)]
 #[rtype(result = "()")]
 pub struct Disconnect {
-    pub user_id: usize,
+    pub user_id: user::ID,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -27,14 +27,14 @@ pub enum Action {
     Chat { payload: ChatMessage },
     Draw { payload: DrawInstruction },
     Widget { payload: Widget },
+    Join { payload: UserProfile },
+    Leave { payload: user::ID },
 }
 
 #[derive(Message, Serialize, Clone, Debug)]
 #[rtype(result = "()")]
 pub struct Update {
     pub user_id: usize,
-    pub space_id: usize,
-    pub user_name: String,
     pub action: Action,
 
     #[serde(with = "serde_millis")]
@@ -47,7 +47,8 @@ pub struct SpaceInfo {
     pub space_id: usize,
     pub widgets: Vec<Widget>,
     pub chat: Vec<ChatMessage>,
-    pub line: Vec<DrawnLine>,
+    pub lines: Vec<DrawnLine>,
+    pub users: Vec<UserProfile>,
 }
 
 #[derive(Message)]

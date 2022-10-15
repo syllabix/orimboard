@@ -3,13 +3,15 @@ import { Dispatch, useEffect } from "react";
 import { ChatMessage } from "whiteboard/chat";
 import { LineData } from "whiteboard/drawing/line";
 import { BoardAction } from "whiteboard/state/action";
+import { User } from "whiteboard/user";
 import { WidgetData } from "whiteboard/widget";
 
 export interface BoardState {
     spaceId: number;
     widgets: Widget[];
     chat: Array<ChatMessage>;
-    line: Array<LineData>
+    lines: Array<LineData>
+    users: Array<User>
 }
 export interface Widget {
     id: string;
@@ -35,7 +37,8 @@ export const loadBoardState = (id: string, dispatch: Dispatch<BoardAction>) => {
                 payload: {
                     widgets: res?.data.widgets || [] as Array<WidgetData>,
                     chat: res?.data.chat || [] as Array<ChatMessage>,
-                    line: res?.data.line || [] as Array<LineData>,
+                    lines: res?.data.lines || [] as Array<LineData>,
+                    users: res?.data.users || [] as Array<User>,
                 }
             }))
     }, [id])

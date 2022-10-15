@@ -32,7 +32,7 @@ const WhiteboardPage: NextPage<Props> = ({ id }) => {
             </Head>
             <BoardNav boardname="My Awesome Board" />
             <Pallette onUpdate={updater} />
-            <Messenger messages={state.chat} send={updater} />
+            <Messenger users={state.users} messages={state.chat} send={updater} />
             <Whiteboard state={state} dispatch={updater} />
         </>
     )

@@ -10,12 +10,12 @@ type Connect = {
 }
 
 type UserJoin = {
-    type: "user-join",
+    type: "join",
     payload: User
 }
 
 type UserLeave = {
-    type: "user-leave",
+    type: "leave",
     payload: User
 }
 
@@ -39,7 +39,8 @@ type SetupState = {
     payload: {
         widgets: Array<WidgetData>,
         chat: Array<ChatMessage>,
-        line: Array<LineData>
+        lines: Array<LineData>,
+        users: Array<User>,
     };
 }
 

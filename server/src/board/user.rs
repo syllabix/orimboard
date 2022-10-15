@@ -5,13 +5,15 @@ use actix_web_actors::ws::{self, Message, ProtocolError};
 use serde_json;
 
 use super::{
+    component::UserProfile,
     message::{Action, Connect, Disconnect, Update},
     space::Space,
 };
 
+pub type ID = usize;
+
 pub struct User {
     pub user_id: usize,
-    pub space_id: usize,
     pub name: String,
     pub color: String,
     pub addr: Addr<Space>,
@@ -24,7 +26,11 @@ impl Actor for User {
         let addr = ctx.address();
         self.addr
             .try_send(Connect {
-                user_id: self.user_id,
+                user: UserProfile {
+                    id: self.user_id,
+                    name: self.name.clone(),
+                    color: self.color.clone(),
+                },
                 addr: addr.recipient(),
             })
             .unwrap();
@@ -51,8 +57,6 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for User {
 
                 self.addr.do_send(Update {
                     user_id: self.user_id,
-                    space_id: self.space_id,
-                    user_name: self.name.clone(),
                     action,
                     created_at: SystemTime::now(),
                 })
