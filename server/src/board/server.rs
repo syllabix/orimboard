@@ -1,18 +1,13 @@
-use actix::{Actor, Addr, Context, Handler, Message, MessageResponse, Recipient};
-use actix_web::{
-    body::BoxBody,
-    http::{header::ContentType, StatusCode},
-    web, Error, HttpRequest, HttpResponse, Responder, ResponseError,
-};
-use actix_web_actors::ws;
-use derive_more::{Display, Error};
-use rand::Rng;
+use actix::{Actor, Context, Handler, Message, MessageResponse, Recipient};
+
+
+
+
 use serde::Serialize;
 use std::collections::HashMap;
 
 use super::{
     space::{Chat, Space, Update, Widget, DrawnLine},
-    user::User,
 };
 
 #[derive(Message)]
@@ -131,65 +126,5 @@ impl Handler<SpaceInfoRequest> for BoardServer {
                 line: vec![],
             },
         }
-    }
-}
-
-#[derive(Debug, Display, Error)]
-pub enum ServerError {
-    #[display(fmt = "The board id is invalid")]
-    InvalidBoardId,
-}
-
-impl ResponseError for ServerError {
-    fn status_code(&self) -> StatusCode {
-        match self {
-            ServerError::InvalidBoardId => StatusCode::BAD_REQUEST,
-        }
-    }
-
-    fn error_response(&self) -> HttpResponse<BoxBody> {
-        HttpResponse::build(self.status_code())
-            .insert_header(ContentType::json())
-            .body(self.to_string())
-    }
-}
-
-pub async fn connect(
-    req: HttpRequest,
-    stream: web::Payload,
-    server: web::Data<Addr<BoardServer>>,
-) -> Result<HttpResponse, Error> {
-    let user_id: usize = rand::thread_rng().gen();
-    let space_id: &str = match req.match_info().get("id") {
-        Some(id) => id,
-        None => return Err(Error::from(ServerError::InvalidBoardId)),
-    };
-
-    let space_id: usize = match space_id.trim().parse() {
-        Ok(id) => id,
-        Err(_) => return Err(Error::from(ServerError::InvalidBoardId)),
-    };
-
-    ws::start(
-        User {
-            user_id,
-            space_id,
-            name: String::from("Tom"),
-            color: String::from("blue"),
-            addr: server.get_ref().clone(),
-        },
-        &req,
-        stream,
-    )
-}
-
-pub async fn get_widgets(
-    space_id: web::Path<usize>,
-    server: web::Data<Addr<BoardServer>>,
-) -> impl Responder {
-    let space_id = space_id.into_inner();
-    match server.send(SpaceInfoRequest { space_id }).await {
-        Ok(result) => HttpResponse::Ok().json(result),
-        Err(_) => HttpResponse::InternalServerError().finish(),
     }
 }
