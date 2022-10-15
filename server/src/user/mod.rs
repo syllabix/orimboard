@@ -6,5 +6,5 @@
 
 mod registry;
 
-pub use self::registry::Registry;
 pub use self::registry::Participant;
+pub use self::registry::Registry;

@@ -1,19 +1,13 @@
-
-
-use actix::Addr;
 use actix_web::{
     body::BoxBody,
     http::{header::ContentType, StatusCode},
-    web, Error, HttpRequest, HttpResponse, Responder, ResponseError,
+    web, Error, HttpRequest, HttpResponse, ResponseError,
 };
 use actix_web_actors::ws;
 use derive_more::{Display, Error};
 
 use crate::{
-    board::{
-        server::{BoardServer, SpaceInfoRequest},
-        user::User,
-    },
+    board::{server::Registry, space, user::User},
     user,
 };
 
@@ -62,7 +56,7 @@ fn get_user(
     }
 }
 
-fn get_space_id(req: &HttpRequest) -> Result<usize, Error> {
+fn get_space_id(req: &HttpRequest) -> Result<space::ID, Error> {
     let space_id: &str = match req.match_info().get("id") {
         Some(id) => id,
         None => return Err(Error::from(ServerError::InvalidBoardId)),
@@ -77,11 +71,13 @@ fn get_space_id(req: &HttpRequest) -> Result<usize, Error> {
 pub async fn connect(
     req: HttpRequest,
     stream: web::Payload,
-    server: web::Data<Addr<BoardServer>>,
+    server: web::Data<Registry>,
     user_svc: web::Data<user::Registry>,
 ) -> Result<HttpResponse, Error> {
     let user = get_user(&req, user_svc)?;
     let space_id = get_space_id(&req)?;
+
+    let space = server.get_or_create(space_id);
 
     ws::start(
         User {
@@ -89,7 +85,7 @@ pub async fn connect(
             space_id,
             name: user.name,
             color: user.color,
-            addr: server.get_ref().clone(),
+            addr: space.clone(),
         },
         &req,
         stream,
@@ -97,12 +93,12 @@ pub async fn connect(
 }
 
 pub async fn get_widgets(
-    space_id: web::Path<usize>,
-    server: web::Data<Addr<BoardServer>>,
-) -> impl Responder {
+    space_id: web::Path<space::ID>,
+    server: web::Data<Registry>,
+) -> HttpResponse {
     let space_id = space_id.into_inner();
-    match server.send(SpaceInfoRequest { space_id }).await {
-        Ok(result) => HttpResponse::Ok().json(result),
-        Err(_) => HttpResponse::InternalServerError().finish(),
+    match server.get_space_info(space_id).await {
+        Some(info) => HttpResponse::Ok().json(info),
+        None => HttpResponse::NotFound().finish(),
     }
 }

@@ -2,13 +2,12 @@ mod board;
 mod handler;
 mod user;
 
-use actix::Actor;
 use actix_cors::Cors;
 
 use actix_web::middleware::Logger;
 use actix_web::{web, App, HttpServer};
 
-use crate::board::server::BoardServer;
+use crate::board::server::Registry;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
@@ -23,7 +22,7 @@ async fn main() -> std::io::Result<()> {
     log::info!("Starting board server at {}:{}...", &host, &port);
 
     let user_registry = web::Data::new(user::Registry::new());
-    let board_server = web::Data::new(BoardServer::new().start());
+    let board_server = web::Data::new(Registry::new());
 
     HttpServer::new(move || {
         let logger = Logger::default();

@@ -1,108 +1,27 @@
 use std::collections::HashMap;
-use std::time::SystemTime;
 
-use actix::prelude::*;
+use actix::{Actor, Context, Handler, Recipient};
 
-use serde::{Deserialize, Serialize};
+use super::{
+    component::{ChatMessage, DrawnLine, Widget},
+    message::{Action, Connect, Disconnect, SpaceInfo, SpaceInfoRequest, Update},
+};
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub enum DrawAction {
-    Start,
-    Stroke,
-    Finish,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct Chat {
-    pub text: String,
-    pub sent_at: String,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct Point {
-    pub x: i64,
-    pub y: i64,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct DrawInstruction {
-    pub id: String,
-    pub point: Point,
-    pub color: String,
-    pub action: DrawAction,
-}
-
-#[derive(Debug, Clone, Serialize)]
-pub struct DrawnLine {
-    pub id: String,
-    pub color: String,
-    pub points: Vec<i64>,
-    pub action: DrawAction,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub enum WidgetKind {
-    Sticky,
-    Rect,
-    Circle,
-    Star,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct Widget {
-    pub id: String,
-    pub kind: WidgetKind,
-    pub x: f64,
-    pub y: f64,
-    pub width: f64,
-    pub height: f64,
-    pub fill: String,
-    pub stroke: String,
-    pub draggable: bool,
-
-    #[serde(default)]
-    pub text: String,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(tag = "type", rename_all = "camelCase")]
-pub enum Action {
-    Chat { payload: Chat },
-    Draw { payload: DrawInstruction },
-    Widget { payload: Widget },
-}
-
-#[derive(Message, Serialize, Clone, Debug)]
-#[rtype(result = "()")]
-pub struct Update {
-    pub user_id: usize,
-    pub space_id: usize,
-    pub user_name: String,
-    pub action: Action,
-
-    #[serde(with = "serde_millis")]
-    pub created_at: SystemTime,
-}
+pub type ID = usize;
 
 #[derive(Debug, Clone)]
 pub struct Space {
-    _id: usize,
+    id: ID,
     pub users: HashMap<usize, Recipient<Update>>,
     widgets: HashMap<String, Widget>,
-    chat: Vec<Chat>,
+    chat: Vec<ChatMessage>,
     lines: HashMap<String, DrawnLine>,
 }
 
 impl Space {
     pub fn new(id: usize) -> Space {
         Space {
-            _id: id,
+            id: id,
             users: HashMap::new(),
             widgets: HashMap::new(),
             chat: vec![],
@@ -110,15 +29,15 @@ impl Space {
         }
     }
 
-    pub fn register(&mut self, user_id: usize, addr: Recipient<Update>) {
+    fn register(&mut self, user_id: usize, addr: Recipient<Update>) {
         self.users.insert(user_id, addr);
     }
 
-    pub fn unregister(&mut self, user_id: usize) -> Option<Recipient<Update>> {
+    fn unregister(&mut self, user_id: usize) -> Option<Recipient<Update>> {
         self.users.remove(&user_id)
     }
 
-    pub fn upsert(&mut self, action: Action) -> Action {
+    fn upsert(&mut self, action: Action) -> Action {
         match action {
             Action::Chat { payload } => {
                 let msg = payload.clone();
@@ -147,15 +66,68 @@ impl Space {
         }
     }
 
-    pub fn get_widgets(&self) -> Vec<Widget> {
+    fn get_widgets(&self) -> Vec<Widget> {
         self.widgets.values().cloned().collect()
     }
 
-    pub fn get_chat_history(&self) -> Vec<Chat> {
+    fn get_chat_history(&self) -> Vec<ChatMessage> {
         self.chat.iter().cloned().collect()
     }
 
-    pub fn get_drawings(&self) -> Vec<DrawnLine> {
+    fn get_drawings(&self) -> Vec<DrawnLine> {
         self.lines.values().cloned().collect()
+    }
+}
+
+impl Actor for Space {
+    type Context = Context<Self>;
+}
+
+impl Handler<Connect> for Space {
+    type Result = ();
+
+    fn handle(&mut self, msg: Connect, _ctx: &mut Self::Context) -> Self::Result {
+        log::debug!("user {} connecting to space {}", &msg.user_id, &self.id);
+        self.register(msg.user_id, msg.addr);
+    }
+}
+
+impl Handler<Disconnect> for Space {
+    type Result = ();
+
+    fn handle(&mut self, msg: Disconnect, _ctx: &mut Self::Context) -> Self::Result {
+        log::debug!(
+            "user {} disconnecting from space {}",
+            &msg.user_id,
+            &self.id
+        );
+        self.unregister(msg.user_id);
+    }
+}
+
+impl Handler<Update> for Space {
+    type Result = ();
+
+    fn handle(&mut self, mut msg: Update, _ctx: &mut Self::Context) -> Self::Result {
+        let action = self.upsert(msg.action);
+        msg.action = action;
+        for (user_id, user) in self.users.iter() {
+            if msg.user_id != *user_id {
+                user.do_send(msg.clone())
+            }
+        }
+    }
+}
+
+impl Handler<SpaceInfoRequest> for Space {
+    type Result = SpaceInfo;
+
+    fn handle(&mut self, msg: SpaceInfoRequest, _ctx: &mut Self::Context) -> Self::Result {
+        SpaceInfo {
+            space_id: msg.space_id,
+            widgets: self.get_widgets(),
+            chat: self.get_chat_history(),
+            line: self.get_drawings(),
+        }
     }
 }

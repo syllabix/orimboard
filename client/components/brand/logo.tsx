@@ -11,7 +11,7 @@ const BrandTitle = () => (
 export const NavLogo = () => (
     <div className="flex">
         <Logo />
-        <div className="relative p-1" />
+        <div className="relative pr-1" />
         <BrandTitle />
     </div>
 )

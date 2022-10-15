@@ -1,4 +1,4 @@
-use std::{time::SystemTime};
+use std::time::SystemTime;
 
 use dashmap::DashMap;
 use rand::{thread_rng, Rng};

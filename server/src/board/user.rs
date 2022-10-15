@@ -5,8 +5,8 @@ use actix_web_actors::ws::{self, Message, ProtocolError};
 use serde_json;
 
 use super::{
-    server::{BoardServer, Connect, Disconnect},
-    space::{Update, Action},
+    message::{Action, Connect, Disconnect, Update},
+    space::Space,
 };
 
 pub struct User {
@@ -14,7 +14,7 @@ pub struct User {
     pub space_id: usize,
     pub name: String,
     pub color: String,
-    pub addr: Addr<BoardServer>,
+    pub addr: Addr<Space>,
 }
 
 impl Actor for User {
@@ -25,7 +25,6 @@ impl Actor for User {
         self.addr
             .try_send(Connect {
                 user_id: self.user_id,
-                space_id: self.space_id,
                 addr: addr.recipient(),
             })
             .unwrap();
@@ -34,12 +33,11 @@ impl Actor for User {
     fn stopped(&mut self, _ctx: &mut Self::Context) {
         self.addr.do_send(Disconnect {
             user_id: self.user_id,
-            space_id: self.space_id,
         })
     }
 }
 
-impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for User  {
+impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for User {
     fn handle(&mut self, msg: Result<Message, ProtocolError>, ctx: &mut Self::Context) {
         match msg {
             Ok(ws::Message::Text(text)) => {
