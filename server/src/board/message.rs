@@ -3,13 +3,15 @@ use actix::{Message, MessageResponse, Recipient};
 use serde::{Deserialize, Serialize};
 use std::time::SystemTime;
 
-use super::component::{ChatMessage, DrawInstruction, DrawnLine, Widget};
+use super::{
+    component::{ChatMessage, DrawInstruction, DrawnLine, Widget},
+    space,
+};
 
 #[derive(Message)]
 #[rtype(result = "()")]
 pub struct Connect {
     pub user_id: usize,
-    pub space_id: usize,
     pub addr: Recipient<Update>,
 }
 
@@ -17,7 +19,6 @@ pub struct Connect {
 #[rtype(result = "()")]
 pub struct Disconnect {
     pub user_id: usize,
-    pub space_id: usize,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -52,5 +53,5 @@ pub struct SpaceInfo {
 #[derive(Message)]
 #[rtype(result = "SpaceInfo")]
 pub struct SpaceInfoRequest {
-    pub space_id: usize,
+    pub space_id: space::ID,
 }
