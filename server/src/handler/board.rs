@@ -7,7 +7,7 @@ use actix_web_actors::ws;
 use derive_more::{Display, Error};
 
 use crate::{
-    board::{server::Registry, space, user::User},
+    board::{Registry, space, user::User, self},
     user,
 };
 
@@ -37,7 +37,7 @@ impl ResponseError for ServerError {
 
 fn get_user(
     req: &HttpRequest,
-    user_svc: web::Data<user::Registry>,
+    registry: web::Data<user::Registry>,
 ) -> Result<user::Participant, Error> {
     let user_id: u16 = match req.cookie("token") {
         Some(cookie) => match cookie.value().trim().parse() {
@@ -50,7 +50,7 @@ fn get_user(
         None => return Err(Error::from(ServerError::UserNotAuthorized)),
     };
 
-    match user_svc.get(user_id) {
+    match registry.get(user_id) {
         Some(user) => Ok(user),
         None => Err(Error::from(ServerError::UserNotAuthorized)),
     }
@@ -71,13 +71,12 @@ fn get_space_id(req: &HttpRequest) -> Result<space::ID, Error> {
 pub async fn connect(
     req: HttpRequest,
     stream: web::Payload,
-    server: web::Data<Registry>,
-    user_svc: web::Data<user::Registry>,
+    spaces: web::Data<board::Registry>,
+    users: web::Data<user::Registry>,
 ) -> Result<HttpResponse, Error> {
-    let user = get_user(&req, user_svc)?;
+    let user = get_user(&req, users)?;
     let space_id = get_space_id(&req)?;
-
-    let space = server.get_or_create(space_id);
+    let space = spaces.get_or_create(space_id);
 
     ws::start(
         User {

@@ -4,8 +4,10 @@
 //!
 
 mod component;
+mod registry;
 
 pub mod message;
-pub mod server;
 pub mod space;
 pub mod user;
+
+pub use self::registry::Registry;
