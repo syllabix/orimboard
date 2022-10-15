@@ -16,7 +16,7 @@ type UserJoin = {
 
 type UserLeave = {
     type: "leave",
-    payload: User
+    payload: number
 }
 
 type Chat = {

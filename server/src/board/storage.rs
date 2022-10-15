@@ -56,7 +56,10 @@ impl Service {
                 self.users.insert(payload.id, payload.clone());
                 Action::Join { payload }
             }
-            Action::Leave { payload: _ } => action,
+            Action::Leave { payload } => {
+                self.users.remove(&payload);
+                Action::Leave { payload }
+            }
         }
     }
 

@@ -3,7 +3,7 @@ use std::{collections::HashMap, time::SystemTime};
 use actix::{Actor, Context, Handler, Recipient};
 
 use super::{
-    component::{ChatMessage, DrawnLine, Widget},
+    component::{ChatMessage, DrawnLine, UserProfile, Widget},
     message::{Action, Connect, Disconnect, SpaceInfo, SpaceInfoRequest, Update},
     storage,
 };
@@ -13,33 +13,33 @@ pub type ID = usize;
 #[derive(Debug, Clone)]
 pub struct Space {
     id: ID,
-    users: HashMap<usize, Recipient<Update>>,
     storage: storage::Service,
+    recipients: HashMap<usize, Recipient<Update>>,
 }
 
 impl Space {
     pub fn new(id: ID) -> Space {
         Space {
             id,
-            users: HashMap::new(),
+            recipients: HashMap::new(),
             storage: storage::Service::new(id),
         }
     }
 
     fn broadcast(&self, msg: Update) {
-        for (user_id, user) in self.users.iter() {
-            if msg.user_id != *user_id {
-                user.do_send(msg.clone())
-            }
+        for (_, user) in self.recipients.iter() {
+            user.do_send(msg.clone())
         }
     }
 
-    fn register(&mut self, user_id: usize, addr: Recipient<Update>) {
-        self.users.insert(user_id, addr);
+    fn register(&mut self, user_id: usize, profile: UserProfile, addr: Recipient<Update>) {
+        self.recipients.insert(user_id, addr);
+        self.storage.upsert(Action::Join { payload: profile });
     }
 
     fn unregister(&mut self, user_id: usize) -> Option<Recipient<Update>> {
-        self.users.remove(&user_id)
+        self.storage.upsert(Action::Leave { payload: user_id });
+        self.recipients.remove(&user_id)
     }
 
     fn upsert(&mut self, action: Action) -> Action {
@@ -56,7 +56,7 @@ impl Handler<Connect> for Space {
 
     fn handle(&mut self, msg: Connect, _ctx: &mut Self::Context) -> Self::Result {
         log::debug!("user {} connecting to space {}", &msg.user.id, &self.id);
-        self.register(msg.user.id, msg.addr);
+        self.register(msg.user.id, msg.user.clone(), msg.addr);
         self.broadcast(Update {
             user_id: msg.user.id,
             action: Action::Join { payload: msg.user },
@@ -90,7 +90,11 @@ impl Handler<Update> for Space {
 
     fn handle(&mut self, mut msg: Update, _ctx: &mut Self::Context) -> Self::Result {
         msg.action = self.upsert(msg.action);
-        self.broadcast(msg);
+        for (user_id, user) in self.recipients.iter() {
+            if msg.user_id != *user_id {
+                user.do_send(msg.clone())
+            }
+        }
     }
 }
 

@@ -39,6 +39,14 @@ const reducer = (state: BoardState, action: BoardAction): BoardState => {
                     ...{ [action.payload.id]: action.payload }
                 }
             }
+        case 'leave':
+            const { [action.payload]: user, ...activeUsers } = state.users;
+            return {
+                ...state,
+                users: {
+                    ...activeUsers,
+                }
+            }
         case 'mode':
             return {
                 ...state,
