@@ -11,7 +11,6 @@ export interface BoardState {
     chat: Array<ChatMessage>;
     line: Array<LineData>
 }
-
 export interface Widget {
     id: string;
     kind: WidgetKind;

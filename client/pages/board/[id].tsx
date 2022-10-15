@@ -1,4 +1,4 @@
-import type { NextPage } from 'next';
+import type { NextPage, NextPageContext } from 'next';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 import { useBoardState } from '../../whiteboard/state/useBoardState';
@@ -8,6 +8,7 @@ import { BoardNav } from '../../components/navigation/board-nav';
 import { Messenger } from '../../components/chat/messenger';
 import Pallette from 'components/pallette';
 import { loadBoardState } from 'api/board/loadBoardState';
+import { securePageLoad } from 'api/auth/securePageLoad';
 
 const WhiteboardPage: NextPage = () => {
     const { id } = useRouter().query as { id: string }
@@ -32,6 +33,10 @@ const WhiteboardPage: NextPage = () => {
             <Whiteboard state={state} dispatch={updater} />
         </>
     )
+}
+
+export async function getServerSideProps(ctx: NextPageContext) {
+    return securePageLoad(ctx);
 }
 
 export default WhiteboardPage

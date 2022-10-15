@@ -1,5 +1,5 @@
 use std::time::{SystemTime};
-use actix_web::{HttpResponse, Responder};
+use actix_web::{HttpResponse};
 use serde::Serialize;
 
 #[derive(Serialize)]
@@ -11,7 +11,7 @@ pub struct Response {
     pub timestamp: std::time::SystemTime
 }
 
-pub async fn health_check() -> impl Responder {
+pub async fn health_check() -> HttpResponse {
     HttpResponse::Ok().json(
         Response {
             status: String::from("Ok"),

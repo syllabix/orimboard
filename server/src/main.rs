@@ -1,6 +1,6 @@
 mod board;
 mod handler;
-mod service;
+mod user;
 
 use actix::Actor;
 use actix_cors::Cors;
@@ -22,6 +22,7 @@ async fn main() -> std::io::Result<()> {
         .unwrap_or(8080);
     log::info!("Starting board server at {}:{}...", &host, &port);
 
+    let user_registry = web::Data::new(user::Registry::new());
     let board_server = web::Data::new(BoardServer::new().start());
 
     HttpServer::new(move || {
@@ -32,10 +33,18 @@ async fn main() -> std::io::Result<()> {
             .wrap(logger)
             .route("/healthz", web::get().to(handler::health_check))
             .service(
+                web::scope("/v1/user")
+                    .app_data(user_registry.clone())
+                    .route("", web::put().to(handler::user::create))
+                    .route("", web::get().to(handler::user::get_all))
+                    .route("/{id}", web::get().to(handler::user::get)),
+            )
+            .service(
                 web::scope("/v1/board")
                     .app_data(board_server.clone())
-                    .route("/{id}/connect", web::get().to(board::server::connect))
-                    .route("/{id}/widgets", web::get().to(board::server::get_widgets)),
+                    .app_data(user_registry.clone())
+                    .route("/{id}/connect", web::get().to(handler::board::connect))
+                    .route("/{id}/widgets", web::get().to(handler::board::get_widgets)),
             )
     })
     .bind((host, port))?
@@ -49,7 +58,7 @@ fn cors_config() -> Cors {
 
     Cors::default()
         .allowed_origin(cors_allow_origin.as_str())
-        .allowed_methods(vec!["GET", "POST"])
+        .allowed_methods(vec!["GET", "PUT"])
         .allow_any_header()
         .supports_credentials()
         .max_age(3600)
