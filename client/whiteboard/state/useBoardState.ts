@@ -1,5 +1,6 @@
 import { useReducer } from 'react';
 import { LineData } from 'whiteboard/drawing/line';
+import { User } from 'whiteboard/user';
 import { WidgetData } from 'whiteboard/widget';
 import BoardState, { UserState, WidgetState } from '.';
 import { BoardAction } from './action';
@@ -8,6 +9,7 @@ const initialState: BoardState = {
     loading: false,
     connecting: false,
     mode: 'select',
+    activeUser: {} as User,
     chat: [],
     users: {},
     widgets: {},
@@ -53,21 +55,6 @@ const reducer = (state: BoardState, action: BoardAction): BoardState => {
                 mode: action.payload
             }
 
-        case 'add-widgets':
-            const update = action.payload.reduce((prev, cur) => {
-                return {
-                    ...prev,
-                    ...{ [cur.id]: cur }
-                }
-            }, {} as WidgetState)
-            return {
-                ...state,
-                widgets: {
-                    ...state.widgets,
-                    ...update
-                }
-            }
-
         case 'widget':
             return {
                 ...state,
@@ -102,7 +89,7 @@ const reducer = (state: BoardState, action: BoardAction): BoardState => {
                     }
             }
 
-        case "setup-state":
+        case "setup":
             const widgets = action.payload.widgets.reduce((prev, cur) => {
                 return {
                     ...prev,
@@ -119,6 +106,7 @@ const reducer = (state: BoardState, action: BoardAction): BoardState => {
 
             return {
                 ...state,
+                activeUser: action.payload.activeUser,
                 chat: action.payload.chat,
                 lines: action.payload.lines,
                 widgets: {

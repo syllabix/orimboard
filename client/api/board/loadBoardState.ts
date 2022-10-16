@@ -30,7 +30,7 @@ export interface Widget {
 export type WidgetKind = "sticky" | "rect" | "circle" | "star";
 
 export const useBoardStateLoader = (id: string) => {
-    const { data, error } = useSWR(`/v1/board/${id}/widgets`, (url) =>
+    const { data, error } = useSWR(`/v1/board/${id}`, (url) =>
         Client.get<BoardState>(url)
     );
 

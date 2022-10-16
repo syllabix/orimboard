@@ -1,6 +1,5 @@
 import type { NextPage, NextPageContext } from 'next';
 import Head from 'next/head';
-import { useRouter } from 'next/router';
 import { useBoardState } from '../../whiteboard/state/useBoardState';
 import Whiteboard from '../../whiteboard';
 import { useSocket } from '../../whiteboard/socket/useSocket';
@@ -10,20 +9,23 @@ import Pallette from 'components/pallette';
 import { useBoardStateLoader } from 'api/board/loadBoardState';
 import { securePageLoad } from 'api/auth/securePageLoad';
 import { useEffect } from 'react';
+import { User } from 'api/user';
 
 type Props = {
-    id: string
+    id: string,
+    user: User,
 }
 
-const WhiteboardPage: NextPage<Props> = ({ id }) => {
+const WhiteboardPage: NextPage<Props> = ({ id, user }) => {
     const [state, dispatch] = useBoardState();
     const updater = useSocket(id, dispatch);
     const { data, isLoading } = useBoardStateLoader(id);
 
     useEffect(() => {
         dispatch({
-            type: "setup-state",
+            type: "setup",
             payload: {
+                activeUser: user,
                 widgets: data.widgets,
                 chat: data.chat,
                 lines: data.lines,
@@ -45,7 +47,7 @@ const WhiteboardPage: NextPage<Props> = ({ id }) => {
             </Head>
             <BoardNav boardname="My Awesome Board" />
             <Pallette onUpdate={updater} />
-            <Messenger users={state.users} messages={state.chat} send={updater} />
+            <Messenger user={state.activeUser} users={state.users} messages={state.chat} send={updater} />
             <Whiteboard state={state} dispatch={updater} />
         </>
     )
@@ -53,10 +55,11 @@ const WhiteboardPage: NextPage<Props> = ({ id }) => {
 
 export async function getServerSideProps(ctx: NextPageContext) {
     const { id } = ctx.query as { id: string }
-    await securePageLoad(ctx);
+    let result = await securePageLoad(ctx);
     return {
         props: {
-            id
+            id,
+            user: result.props.user
         }
     }
 }

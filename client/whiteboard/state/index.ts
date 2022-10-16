@@ -11,6 +11,7 @@ type BoardState = {
     loading: boolean;
     connecting: boolean;
     mode: PalletteMode;
+    activeUser: User;
     users: UserState;
     chat: Array<ChatMessage>;
     widgets: WidgetState;

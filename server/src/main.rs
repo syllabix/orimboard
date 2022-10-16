@@ -43,7 +43,7 @@ async fn main() -> std::io::Result<()> {
                     .app_data(board_server.clone())
                     .app_data(user_registry.clone())
                     .route("/{id}/connect", web::get().to(handler::board::connect))
-                    .route("/{id}/widgets", web::get().to(handler::board::get_widgets)),
+                    .route("/{id}", web::get().to(handler::board::get_state)),
             )
     })
     .bind((host, port))?

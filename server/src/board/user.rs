@@ -17,11 +17,33 @@ const CLIENT_TIMEOUT: Duration = Duration::from_secs(30);
 pub type ID = usize;
 
 pub struct User {
-    pub user_id: usize,
+    pub user_id: ID,
     pub name: String,
     pub color: String,
     pub addr: Addr<Space>,
-    pub heartbeat: Instant, //TODO Should be private
+    heartbeat: Instant,
+}
+
+impl User {
+    pub fn new(user_id: ID, name: String, color: String, addr: Addr<Space>) -> User {
+        User {
+            user_id,
+            name,
+            color,
+            addr,
+            heartbeat: Instant::now(),
+        }
+    }
+
+    fn heartbeat(&self, ctx: &mut <Self as Actor>::Context) {
+        ctx.run_interval(HEARTBEAT_INTERVAL, |act, ctx| {
+            if Instant::now().duration_since(act.heartbeat) > CLIENT_TIMEOUT {
+                ctx.stop();
+                return;
+            }
+            ctx.ping(b"");
+        });
+    }
 }
 
 impl Actor for User {
@@ -50,20 +72,6 @@ impl Actor for User {
     }
 }
 
-impl User {
-    fn heartbeat(&self, ctx: &mut <Self as Actor>::Context) {
-        ctx.run_interval(HEARTBEAT_INTERVAL, |act, ctx| {
-            if Instant::now().duration_since(act.heartbeat) > CLIENT_TIMEOUT {
-                ctx.stop();
-                return;
-            }
-
-            println!("Ping! Checking if alive");
-            ctx.ping(b"");
-        });
-    }
-}
-
 impl StreamHandler<Result<ws::Message, ProtocolError>> for User {
     fn handle(&mut self, msg: Result<Message, ProtocolError>, ctx: &mut Self::Context) {
         match msg {
@@ -82,10 +90,10 @@ impl StreamHandler<Result<ws::Message, ProtocolError>> for User {
                     created_at: SystemTime::now(),
                 })
             }
+
             // The recurring Ping/Pong is used to keep connections alive; for every pong received
             // reset the heartbeat
             Ok(Message::Pong(_)) => {
-                println!("Pong! - yep user {} is kicking!", self.user_id);
                 self.heartbeat = Instant::now();
             }
             _ => ctx.stop(),

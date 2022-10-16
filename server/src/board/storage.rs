@@ -26,26 +26,30 @@ impl Service {
         }
     }
 
-    pub fn upsert(&mut self, action: Action) -> Action {
+    pub fn upsert(&mut self, user_id: user::ID, action: Action) -> Action {
         match action {
-            Action::Chat { payload } => {
+            Action::Chat { mut payload } => {
+                payload.user = self.users.get(&user_id).cloned();
                 let msg = payload.clone();
                 self.chat.push(msg);
                 Action::Chat { payload }
             }
-            Action::Draw { payload } => {
+            Action::Draw { mut payload } => {
+                payload.user_id = user_id;
                 let msg = payload.clone();
                 let line = self.lines.entry(msg.id.clone()).or_insert(DrawnLine {
                     id: msg.id,
                     color: msg.color,
                     points: vec![],
                     action: msg.action,
+                    user_id,
                 });
                 line.points.push(msg.point.x);
                 line.points.push(msg.point.y);
                 Action::Draw { payload }
             }
-            Action::Widget { payload } => {
+            Action::Widget { mut payload } => {
+                payload.user_id = user_id;
                 let id = payload.id.clone();
                 self.widgets.insert(id.clone(), payload);
                 Action::Widget {

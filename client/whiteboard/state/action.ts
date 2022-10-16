@@ -29,14 +29,10 @@ type AddWidget = {
     payload: WidgetData;
 }
 
-type AddWidgets = {
-    type: "add-widgets";
-    payload: Array<WidgetData>;
-}
-
 type SetupState = {
-    type: "setup-state";
+    type: "setup";
     payload: {
+        activeUser: User,
         widgets: Array<WidgetData>,
         chat: Array<ChatMessage>,
         lines: Array<LineData>,
@@ -70,7 +66,6 @@ export type BoardAction =
     | UserLeave
     | Chat
     | AddWidget
-    | AddWidgets
     | MoveWidget
     | Draw
     | SetupState

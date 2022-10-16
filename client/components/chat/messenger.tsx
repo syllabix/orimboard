@@ -1,5 +1,6 @@
 import Button from "components/button"
 import { ActiveUser } from "components/chat/active-user"
+import { Message } from "components/chat/message"
 import Icon from "components/icon/icon"
 import { Card } from "components/layout/card"
 import { Field, Form, Formik } from "formik"
@@ -8,6 +9,7 @@ import { ChatMessage } from "../../whiteboard/chat"
 import { BoardAction } from "../../whiteboard/state/action"
 
 type Props = {
+    user: User,
     send: (msg: BoardAction) => void,
     users: {
         [id: string]: User,
@@ -15,22 +17,20 @@ type Props = {
     messages: Array<ChatMessage>,
 }
 
-export const Messenger: React.FC<Props> = ({ send, users, messages }) => (
+export const Messenger: React.FC<Props> = ({ send, user, users, messages }) => (
     <div className="absolute right-4 top-4 z-10">
         <Card className="flex justify-between">
             <Icon width={30} height={30} className="mr-2 fill-slate-300" kind="People" />
             <div className="flex justify-end space-x-1">
-            {Object.values(users).slice(0, 7).map(user => (
-                <ActiveUser key={user.id} user={user} />
-            ))}
+                {Object.values(users).slice(0, 7).map(user => (
+                    <ActiveUser key={user.id} user={user} />
+                ))}
             </div>
         </Card>
         <Card className="mt-4">
             <div className="rounded-md">
                 {messages.map(msg => (
-                    <p key={msg.sentAt} className="p-1 rounded-md bg-slate-300 my-2 text-slate-900">
-                        {msg.text}
-                    </p>
+                    <Message key={msg.sentAt} message={msg} />
                 ))}
             </div>
             <Formik
@@ -40,7 +40,8 @@ export const Messenger: React.FC<Props> = ({ send, users, messages }) => (
                         type: 'chat',
                         payload: {
                             text: values.message,
-                            sentAt: new Date().toISOString()
+                            sentAt: new Date().toISOString(),
+                            user
                         }
                     })
                     resetForm();
