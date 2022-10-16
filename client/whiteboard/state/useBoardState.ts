@@ -53,21 +53,6 @@ const reducer = (state: BoardState, action: BoardAction): BoardState => {
                 mode: action.payload
             }
 
-        case 'add-widgets':
-            const update = action.payload.reduce((prev, cur) => {
-                return {
-                    ...prev,
-                    ...{ [cur.id]: cur }
-                }
-            }, {} as WidgetState)
-            return {
-                ...state,
-                widgets: {
-                    ...state.widgets,
-                    ...update
-                }
-            }
-
         case 'widget':
             return {
                 ...state,
@@ -102,7 +87,7 @@ const reducer = (state: BoardState, action: BoardAction): BoardState => {
                     }
             }
 
-        case "setup-state":
+        case "setup":
             const widgets = action.payload.widgets.reduce((prev, cur) => {
                 return {
                     ...prev,

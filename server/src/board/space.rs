@@ -3,9 +3,9 @@ use std::{collections::HashMap, time::SystemTime};
 use actix::{Actor, Context, Handler, Recipient};
 
 use super::{
-    component::{ChatMessage, DrawnLine, UserProfile, Widget},
+    component::UserProfile,
     message::{Action, Connect, Disconnect, SpaceInfo, SpaceInfoRequest, Update},
-    storage,
+    storage, user,
 };
 
 pub type ID = usize;
@@ -32,18 +32,20 @@ impl Space {
         }
     }
 
-    fn register(&mut self, user_id: usize, profile: UserProfile, addr: Recipient<Update>) {
-        self.recipients.insert(user_id, addr);
-        self.storage.upsert(Action::Join { payload: profile });
+    fn register(&mut self, user: UserProfile, addr: Recipient<Update>) {
+        self.recipients.insert(user.id, addr);
+        self.storage
+            .upsert(user.id, Action::Join { payload: user });
     }
 
-    fn unregister(&mut self, user_id: usize) -> Option<Recipient<Update>> {
-        self.storage.upsert(Action::Leave { payload: user_id });
+    fn unregister(&mut self, user_id: user::ID) -> Option<Recipient<Update>> {
+        self.storage
+            .upsert(user_id, Action::Leave { payload: user_id });
         self.recipients.remove(&user_id)
     }
 
-    fn upsert(&mut self, action: Action) -> Action {
-        self.storage.upsert(action)
+    fn upsert(&mut self, user_id: user::ID, action: Action) -> Action {
+        self.storage.upsert(user_id, action)
     }
 }
 
@@ -56,7 +58,7 @@ impl Handler<Connect> for Space {
 
     fn handle(&mut self, msg: Connect, _ctx: &mut Self::Context) -> Self::Result {
         log::debug!("user {} connecting to space {}", &msg.user.id, &self.id);
-        self.register(msg.user.id, msg.user.clone(), msg.addr);
+        self.register(msg.user.clone(), msg.addr);
         self.broadcast(Update {
             user_id: msg.user.id,
             action: Action::Join { payload: msg.user },
@@ -89,7 +91,7 @@ impl Handler<Update> for Space {
     type Result = ();
 
     fn handle(&mut self, mut msg: Update, _ctx: &mut Self::Context) -> Self::Result {
-        msg.action = self.upsert(msg.action);
+        msg.action = self.upsert(msg.user_id, msg.action);
         for (user_id, user) in self.recipients.iter() {
             if msg.user_id != *user_id {
                 user.do_send(msg.clone())

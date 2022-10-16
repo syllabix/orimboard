@@ -9,7 +9,7 @@ use actix_web_actors::ws;
 use derive_more::{Display, Error};
 
 use crate::{
-    board::{Registry, space, user::User, self},
+    board::{self, space, user::User, Registry},
     user,
 };
 
@@ -81,13 +81,7 @@ pub async fn connect(
     let space = spaces.get_or_create(space_id);
 
     ws::start(
-        User {
-            user_id: user.id.into(),
-            name: user.name,
-            color: user.color,
-            addr: space.clone(),
-            heartbeat: Instant::now(),
-        },
+        User::new(user.id.into(), user.name, user.color, space.clone()),
         &req,
         stream,
     )

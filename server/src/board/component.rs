@@ -15,6 +15,9 @@ pub enum DrawAction {
 pub struct ChatMessage {
     pub text: String,
     pub sent_at: String,
+
+    #[serde(skip_deserializing)]
+    pub user: Option<UserProfile>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -31,14 +34,19 @@ pub struct DrawInstruction {
     pub point: Point,
     pub color: String,
     pub action: DrawAction,
+
+    #[serde(skip_deserializing)]
+    pub user_id: user::ID,
 }
 
 #[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct DrawnLine {
     pub id: String,
     pub color: String,
     pub points: Vec<i64>,
     pub action: DrawAction,
+    pub user_id: user::ID,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -65,6 +73,9 @@ pub struct Widget {
 
     #[serde(default)]
     pub text: String,
+
+    #[serde(skip_deserializing)]
+    pub user_id: user::ID,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

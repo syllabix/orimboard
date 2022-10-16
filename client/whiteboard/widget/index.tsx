@@ -1,5 +1,3 @@
-import { KonvaNodeEvents } from "react-konva";
-
 export type WidgetKind = "sticky" | "rect" | "circle" | "star";
 
 export type WidgetData = {
@@ -24,4 +22,3 @@ export type WidgetActions = {
     onMouseDown?: () => void,
     onMouseUp?: () => void,
 }
-//& KonvaNodeEvents

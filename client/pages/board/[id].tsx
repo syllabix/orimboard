@@ -22,7 +22,7 @@ const WhiteboardPage: NextPage<Props> = ({ id }) => {
 
     useEffect(() => {
         dispatch({
-            type: "setup-state",
+            type: "setup",
             payload: {
                 widgets: data.widgets,
                 chat: data.chat,
