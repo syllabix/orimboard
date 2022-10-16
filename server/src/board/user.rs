@@ -10,7 +10,7 @@ use super::{
     space::Space,
 };
 
-// Every minute - check if this client is alive.
+// Every 10 seconds - check if this client is alive.
 const HEARTBEAT_INTERVAL: Duration = Duration::from_secs(10);
 const CLIENT_TIMEOUT: Duration = Duration::from_secs(30);
 
@@ -85,7 +85,7 @@ impl StreamHandler<Result<ws::Message, ProtocolError>> for User {
             // The recurring Ping/Pong is used to keep connections alive; for every pong received
             // reset the heartbeat
             Ok(Message::Pong(_)) => {
-                println!("Pong! - yep user {} is kicking!", self.user_id);
+                println!("Pong! - yep user {} is alive!", self.user_id);
                 self.heartbeat = Instant::now();
             }
             _ => ctx.stop(),

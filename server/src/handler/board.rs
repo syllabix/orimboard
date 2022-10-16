@@ -6,10 +6,11 @@ use actix_web::{
     web, Error, HttpRequest, HttpResponse, ResponseError,
 };
 use actix_web_actors::ws;
+use actix_session:: Session;
 use derive_more::{Display, Error};
 
 use crate::{
-    board::{Registry, space, user::User, self},
+    board::{self, space, user::User, Registry},
     user,
 };
 
@@ -38,23 +39,17 @@ impl ResponseError for ServerError {
 }
 
 fn get_user(
-    req: &HttpRequest,
+    _req: &HttpRequest,
     registry: web::Data<user::Registry>,
+    session: Session,
 ) -> Result<user::Participant, Error> {
-    let user_id: u16 = match req.cookie("token") {
-        Some(cookie) => match cookie.value().trim().parse() {
-            Ok(user_id) => user_id,
-            Err(e) => {
-                log::error!("{}", e);
-                return Err(Error::from(ServerError::UserNotAuthorized));
-            }
-        },
-        None => return Err(Error::from(ServerError::UserNotAuthorized)),
-    };
-
-    match registry.get(user_id) {
-        Some(user) => Ok(user),
-        None => Err(Error::from(ServerError::UserNotAuthorized)),
+    if let Some(user_id) = session.get::<String>("token")? {
+        match registry.get(user_id.parse::<u16>().unwrap()) {
+            Some(user) => Ok(user),
+            None => Err(Error::from(ServerError::UserNotAuthorized)),
+        }
+    } else {
+        return Err(Error::from(ServerError::UserNotAuthorized));
     }
 }
 
@@ -75,11 +70,14 @@ pub async fn connect(
     stream: web::Payload,
     spaces: web::Data<board::Registry>,
     users: web::Data<user::Registry>,
+    session: Session
 ) -> Result<HttpResponse, Error> {
-    let user = get_user(&req, users)?;
+    println!("Connect entry point");
+    let user = get_user(&req, users, session)?;
     let space_id = get_space_id(&req)?;
     let space = spaces.get_or_create(space_id);
 
+    println!("Start WS connection!");
     ws::start(
         User {
             user_id: user.id.into(),

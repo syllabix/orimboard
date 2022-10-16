@@ -4,10 +4,16 @@ mod user;
 
 use actix_cors::Cors;
 
-use actix_web::middleware::Logger;
-use actix_web::{web, App, HttpServer};
+use actix_session::storage::CookieSessionStore;
+use actix_session::SessionMiddleware;
+use actix_session:: {config::PersistentSession, Session};
+use actix_web::cookie::{Cookie, Key};
+use actix_web::http::{header, StatusCode};
+use actix_web::middleware::{ErrorHandlerResponse, ErrorHandlers, Logger};
+use actix_web::{dev, web, App, HttpServer, Result, cookie, Error, HttpResponse};
 
 use crate::board::Registry;
+use crate::handler::board::ServerError;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
@@ -24,11 +30,25 @@ async fn main() -> std::io::Result<()> {
     let user_registry = web::Data::new(user::Registry::new());
     let board_server = web::Data::new(Registry::new());
 
+    let secret_key_for_cookie = Key::generate();
+
     HttpServer::new(move || {
         let logger = Logger::default();
 
         App::new()
             .wrap(cors_config())
+            .wrap(ErrorHandlers::new().handler(StatusCode::UNAUTHORIZED, handle_unauthorized_error))
+            .wrap(
+                SessionMiddleware::builder(
+                    CookieSessionStore::default(),
+                    secret_key_for_cookie.clone(),
+                )
+                .cookie_secure(false) // http
+                .session_lifecycle(
+                        PersistentSession::default().session_ttl(cookie::time::Duration::hours(2)),
+                    )
+                .build(),
+            )
             .wrap(logger)
             .route("/healthz", web::get().to(handler::health_check))
             .service(
@@ -45,10 +65,31 @@ async fn main() -> std::io::Result<()> {
                     .route("/{id}/connect", web::get().to(handler::board::connect))
                     .route("/{id}/widgets", web::get().to(handler::board::get_widgets)),
             )
+            .default_service(web::to(|| HttpResponse::Ok()))
     })
     .bind((host, port))?
     .run()
     .await
+}
+
+fn handle_unauthorized_error<B>(
+    mut res: dev::ServiceResponse<B>,
+) -> Result<ErrorHandlerResponse<B>> {
+    res.response_mut().headers_mut().insert(
+        header::LOCATION,
+        header::HeaderValue::from_static("/v1/user"),
+    );
+    Ok(ErrorHandlerResponse::Response(res.map_into_left_body()))
+}
+
+fn index(session: Session) -> Result<&'static str, Error> {
+    if let Some(user_id) = session.get::<u16>("token")? {
+        println!("User Id from session state: {}", user_id);
+    } else {
+        return Err(Error::from(ServerError::UserNotAuthorized));
+    }
+
+    Ok("Welcome!")
 }
 
 fn cors_config() -> Cors {

@@ -1,6 +1,6 @@
 use actix_web::{web, HttpResponse};
+use actix_session:: Session;
 use serde::Deserialize;
-
 use crate::user;
 
 #[derive(Deserialize)]
@@ -11,8 +11,12 @@ pub struct CreateUserRequest {
 pub async fn create(
     user: web::Json<CreateUserRequest>,
     svc: web::Data<user::Registry>,
+    session: Session
 ) -> HttpResponse {
     let user = svc.create(user.name.as_str());
+
+    session.insert("token", user.id.to_string());
+    println!("Inserted token for user id: {}", user.id);
     HttpResponse::Created().json(user)
 }
 

@@ -34,7 +34,7 @@ const Home: NextPage = () => {
         }}
         onSubmit={async form => {
           let user = await createUser(form.name);
-          AuthManager.setToken(user.id.toString());
+          //AuthManager.setToken(user.id.toString());
           await Router.push("/board/90210");
         }}
       >
