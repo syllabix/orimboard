@@ -32,6 +32,7 @@ type AddWidget = {
 type SetupState = {
     type: "setup";
     payload: {
+        activeUser: User,
         widgets: Array<WidgetData>,
         chat: Array<ChatMessage>,
         lines: Array<LineData>,

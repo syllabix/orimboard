@@ -87,12 +87,12 @@ pub async fn connect(
     )
 }
 
-pub async fn get_widgets(
+pub async fn get_state(
     space_id: web::Path<space::ID>,
-    server: web::Data<Registry>,
+    registry: web::Data<Registry>,
 ) -> HttpResponse {
     let space_id = space_id.into_inner();
-    match server.get_space_info(space_id).await {
+    match registry.get_space_info(space_id).await {
         Some(info) => HttpResponse::Ok().json(info),
         None => HttpResponse::NotFound().finish(),
     }

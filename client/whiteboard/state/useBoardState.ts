@@ -1,5 +1,6 @@
 import { useReducer } from 'react';
 import { LineData } from 'whiteboard/drawing/line';
+import { User } from 'whiteboard/user';
 import { WidgetData } from 'whiteboard/widget';
 import BoardState, { UserState, WidgetState } from '.';
 import { BoardAction } from './action';
@@ -8,6 +9,7 @@ const initialState: BoardState = {
     loading: false,
     connecting: false,
     mode: 'select',
+    activeUser: {} as User,
     chat: [],
     users: {},
     widgets: {},
@@ -104,6 +106,7 @@ const reducer = (state: BoardState, action: BoardAction): BoardState => {
 
             return {
                 ...state,
+                activeUser: action.payload.activeUser,
                 chat: action.payload.chat,
                 lines: action.payload.lines,
                 widgets: {

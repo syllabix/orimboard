@@ -42,6 +42,8 @@ class APIClient {
 }
 
 const { publicRuntimeConfig } = getConfig();
-const Client = new APIClient(new Http(provider(publicRuntimeConfig.API_SERVER_PATH)));
+const Client = new APIClient(new Http(provider(
+  publicRuntimeConfig.API_SERVER_PATH
+)));
 
 export default Client;

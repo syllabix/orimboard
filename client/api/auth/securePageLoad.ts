@@ -1,10 +1,13 @@
 import { NextPageContext } from "next";
 import { redirect } from "api/auth/redirect";
 import AuthManager from "api/auth/manager";
+import Client from "api/client";
+import { getUser, User } from "api/user";
 
 export type SecurityProps = {
   props: {
     signedUp: boolean;
+    user?: User;
   };
 };
 
@@ -24,11 +27,28 @@ export const securePageLoad = async (
         },
       };
     }
+
+    try {
+      let user = await getUser(result.val.token);
+      return {
+        props: {
+          signedUp: true,
+          user
+        },
+      };
+    } catch (e) {
+      redirect(ctx, "/?status=please+create+username");
+      return {
+        props: {
+          signedUp: false,
+        },
+      };
+    }
   }
 
   return {
     props: {
-      signedUp: true,
+      signedUp: false,
     },
   };
 };

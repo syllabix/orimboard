@@ -9,6 +9,7 @@ import { ChatMessage } from "../../whiteboard/chat"
 import { BoardAction } from "../../whiteboard/state/action"
 
 type Props = {
+    user: User,
     send: (msg: BoardAction) => void,
     users: {
         [id: string]: User,
@@ -16,7 +17,7 @@ type Props = {
     messages: Array<ChatMessage>,
 }
 
-export const Messenger: React.FC<Props> = ({ send, users, messages }) => (
+export const Messenger: React.FC<Props> = ({ send, user, users, messages }) => (
     <div className="absolute right-4 top-4 z-10">
         <Card className="flex justify-between">
             <Icon width={30} height={30} className="mr-2 fill-slate-300" kind="People" />
@@ -39,7 +40,8 @@ export const Messenger: React.FC<Props> = ({ send, users, messages }) => (
                         type: 'chat',
                         payload: {
                             text: values.message,
-                            sentAt: new Date().toISOString()
+                            sentAt: new Date().toISOString(),
+                            user
                         }
                     })
                     resetForm();

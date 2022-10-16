@@ -10,7 +10,10 @@ export const Message: React.FC<Props> = ({ message }) => (
     <div className="bg-slate-500 rounded-md p-2 mb-2">
         <div className="flex justify-between">
             {message.user && (
-                <ActiveUser size={20} user={message.user} />
+                <span className="flex items-center">
+                    <ActiveUser size={20} user={message.user} />
+                    <p className="ml-1 text-xs">{message.user?.name}</p>
+                </span>
             )}
             <TimeDisplay date={message.sentAt} />
         </div>
