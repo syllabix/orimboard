@@ -1,4 +1,4 @@
-use std::time::SystemTime;
+use std::time::{Duration, Instant, SystemTime};
 
 use actix::prelude::*;
 use actix_web_actors::ws::{self, Message, ProtocolError};
@@ -10,6 +10,10 @@ use super::{
     space::Space,
 };
 
+// Every minute - check if this client is alive.
+const HEARTBEAT_INTERVAL: Duration = Duration::from_secs(10);
+const CLIENT_TIMEOUT: Duration = Duration::from_secs(30);
+
 pub type ID = usize;
 
 pub struct User {
@@ -17,6 +21,7 @@ pub struct User {
     pub name: String,
     pub color: String,
     pub addr: Addr<Space>,
+    pub heartbeat: Instant, //TODO Should be private
 }
 
 impl Actor for User {
@@ -34,6 +39,8 @@ impl Actor for User {
                 addr: addr.recipient(),
             })
             .unwrap();
+        // On connection startup - kickoff this user's heartbeat
+        self.heartbeat(ctx);
     }
 
     fn stopped(&mut self, _ctx: &mut Self::Context) {
@@ -43,10 +50,24 @@ impl Actor for User {
     }
 }
 
-impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for User {
+impl User {
+    fn heartbeat(&self, ctx: &mut <Self as Actor>::Context) {
+        ctx.run_interval(HEARTBEAT_INTERVAL, |act, ctx| {
+            if Instant::now().duration_since(act.heartbeat) > CLIENT_TIMEOUT {
+                ctx.stop();
+                return;
+            }
+
+            println!("Ping! Checking if alive");
+            ctx.ping(b"");
+        });
+    }
+}
+
+impl StreamHandler<Result<ws::Message, ProtocolError>> for User {
     fn handle(&mut self, msg: Result<Message, ProtocolError>, ctx: &mut Self::Context) {
         match msg {
-            Ok(ws::Message::Text(text)) => {
+            Ok(Message::Text(text)) => {
                 let action: Action = match serde_json::from_slice(text.as_bytes()) {
                     Ok(c) => c,
                     Err(e) => {
@@ -61,7 +82,13 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for User {
                     created_at: SystemTime::now(),
                 })
             }
-            _ => ctx.pong("pong".as_ref()),
+            // The recurring Ping/Pong is used to keep connections alive; for every pong received
+            // reset the heartbeat
+            Ok(Message::Pong(_)) => {
+                println!("Pong! - yep user {} is kicking!", self.user_id);
+                self.heartbeat = Instant::now();
+            }
+            _ => ctx.stop(),
         }
     }
 }
