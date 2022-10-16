@@ -24,7 +24,7 @@ async fn main() -> std::io::Result<()> {
     let user_registry = web::Data::new(user::Registry::new());
     let board_server = web::Data::new(Registry::new());
 
-    HttpServer::new(move || {
+    let server = HttpServer::new(move || {
         let logger = Logger::default();
 
         App::new()
@@ -47,8 +47,27 @@ async fn main() -> std::io::Result<()> {
             )
     })
     .bind((host, port))?
-    .run()
+    .run();
+    
+    tokio::join!(server, agones_init());
+
+    Ok(())
+}
+
+#[cfg(feature = "agones_enabled")]
+async fn agones_init() -> std::io::Result<()> {
+    log::info!("Connecting to Agones sidecar...");
+    let mut sdk = agones::Sdk::new(None /* default port */, None /* keep_alive */)
     .await
+    .expect("failed to connect to SDK server");
+
+    Ok(())
+}
+
+#[cfg(not(feature = "agones_enabled"))]
+async fn agones_init() -> std::io::Result<()> {
+    log::info!("Local run; Agones not enabled!");
+    Ok(())
 }
 
 fn cors_config() -> Cors {

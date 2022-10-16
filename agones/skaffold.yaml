@@ -1,0 +1,12 @@
+apiVersion: skaffold/v2beta29
+kind: Config
+metadata:
+  name: agones
+deploy:
+  helm:
+    releases:
+      - name: agones-rel
+        remoteChart: agones
+        namespace: agones-sys
+        createNamespace: true
+        repo: https://agones.dev/chart/stable

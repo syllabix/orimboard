@@ -6,8 +6,8 @@ build:
   artifacts:
   - image: orim/board-server
     docker:
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.agones
 deploy:
   kubectl:
     manifests:
-    - k8s/*.yml
+    - k8s-agones/*.yml

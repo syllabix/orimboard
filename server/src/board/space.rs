@@ -3,7 +3,7 @@ use std::{collections::HashMap, time::SystemTime};
 use actix::{Actor, Context, Handler, Recipient};
 
 use super::{
-    component::{ChatMessage, DrawnLine, UserProfile, Widget},
+    component::UserProfile,
     message::{Action, Connect, Disconnect, SpaceInfo, SpaceInfoRequest, Update},
     storage,
 };

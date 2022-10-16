@@ -1,1 +1,4 @@
 target/
+k8s-agones/
+k8s/
+
