@@ -1,31 +1,23 @@
-FROM rust:1.64-slim as agones-sdk
-
-RUN apt-get update && \
-    apt-get install -y wget && \
-    rm -rf /var/lib/apt/lists/*
-
-ARG AGONES_VERSION
-ENV AGONES_VERSION "${AGONES_VERSION:-1.26.0}"
-WORKDIR /tmp
-
-RUN wget -qO- https://github.com/googleforgames/agones/archive/refs/tags/v$AGONES_VERSION.tar.gz | tar xvz 
-
-RUN mv /tmp/agones-${AGONES_VERSION} /agones
-
 FROM rust:1.64-slim as builder
 
-WORKDIR /app
-COPY ./ /app/
+WORKDIR /build
+RUN cargo init --bin --name orim-board-server
+COPY Cargo.lock Cargo.toml /build/
 
-COPY --from=agones-sdk /agones /agones/
-RUN cargo install --path . --features agones_enabled
+RUN cargo build --release --features agones_enabled
+RUN rm src/*.rs && rm target/release/deps/orim_board_server*
+
+COPY src /build/src
+
+RUN cargo build --release --features agones_enabled
 
 # Debian 11 (bullseye)
 FROM debian:11-slim
 
-COPY --from=builder /usr/local/cargo/bin/orim-board-server /usr/local/bin/orim-board-server
+WORKDIR /app
+COPY --from=builder /build/target/release/orim-board-server /app/
 
 ENV HOST "0.0.0.0"
 ENV CORS_ALLOW_ORIGIN "http://orimboard.io"
 
-CMD ["orim-board-server"]
+CMD ["./orim-board-server"]

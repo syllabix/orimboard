@@ -1,16 +1,23 @@
 FROM rust:1.64-slim as builder
 
-WORKDIR /app
-COPY ./ /app/
+WORKDIR /build
+RUN cargo init --bin --name orim-board-server
+COPY Cargo.lock Cargo.toml /build/
 
-RUN cargo install --path .
+RUN cargo build --release
+RUN rm src/*.rs && rm target/release/deps/orim_board_server*
+
+COPY src /build/src
+
+RUN cargo build --release
 
 # Debian 11 (bullseye)
 FROM debian:11-slim
 
-COPY --from=builder /usr/local/cargo/bin/orim-board-server /usr/local/bin/orim-board-server
+WORKDIR /app
+COPY --from=builder /build/target/release/orim-board-server /app/
 
 ENV HOST "0.0.0.0"
 ENV CORS_ALLOW_ORIGIN "http://orimboard.io"
 
-CMD ["orim-board-server"]
+CMD ["./orim-board-server"]

@@ -56,11 +56,42 @@ async fn main() -> std::io::Result<()> {
 
 #[cfg(feature = "agones_enabled")]
 async fn agones_init() -> std::io::Result<()> {
+    use std::time::Duration;
+
     log::info!("Connecting to Agones sidecar...");
     let mut sdk = agones::Sdk::new(None /* default port */, None /* keep_alive */)
     .await
     .expect("failed to connect to SDK server");
 
+    // Spawn a task that will send health checks every 2 seconds. If this current
+    // thread/task panics or dropped, the health check will also be stopped
+    let _health = {
+        let health_tx = sdk.health_check();
+        let (tx, mut rx) = tokio::sync::oneshot::channel::<()>();
+
+        tokio::task::spawn(async move {
+            let mut interval = tokio::time::interval(Duration::from_secs(2));
+
+            loop {
+                tokio::select! {
+                    _ = interval.tick() => {
+                        if health_tx
+                            .send(())
+                            .await.is_err() {
+                            eprintln!("Health check receiver was dropped");
+                            break;
+                        }
+                    }
+                    _ = &mut rx => {
+                        println!("Health check task canceled");
+                        break;
+                    }
+                }
+            }
+        });
+
+        tx
+    };
     Ok(())
 }
 
