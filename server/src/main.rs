@@ -1,4 +1,5 @@
 mod board;
+mod gameserver;
 mod handler;
 mod user;
 
@@ -9,7 +10,7 @@ use actix_cors::Cors;
 use actix_web::middleware::Logger;
 use actix_web::{web, App, HttpServer};
 
-use crate::board::{HealthChecker, Registry};
+use crate::board::Registry;
 
 #[tokio::main]
 async fn main() -> std::io::Result<()> {
@@ -25,22 +26,20 @@ async fn main() -> std::io::Result<()> {
 
     env_logger::init();
 
-    log::info!("connecting to agones sdk sidecar...");
-    let mut sdk = agones::Sdk::new(None, None).await.map_err(|e| {
+    let mut manager = gameserver::Manager::setup().await.map_err(|e| {
         Error::new(
             ErrorKind::Other,
-            format!("failed to start up the game process {}", e),
+            format!("failed to set up game server manager {}", e),
         )
     })?;
 
-    let mut health_check = HealthChecker::new(&sdk);
-    health_check.start();
+    manager.start_health_check();
 
     log::info!("starting board server at {}:{}...", &host, &port);
     let user_registry = web::Data::new(user::Registry::new());
     let board_server = web::Data::new(Registry::new());
 
-    sdk.ready().await.map_err(|e| {
+    manager.ready().await.map_err(|e| {
         Error::new(
             ErrorKind::Other,
             format!("unable to mark server as ready {}", e),
@@ -74,7 +73,7 @@ async fn main() -> std::io::Result<()> {
     .await
     .map_err(|e| Error::new(ErrorKind::Other, e))?;
 
-    sdk.shutdown().await.map_err(|e| {
+    manager.shutdown().await.map_err(|e| {
         Error::new(
             ErrorKind::Other,
             format!("failed to shutdown game server process {}", e),
@@ -95,8 +94,3 @@ fn cors_config() -> Cors {
         .supports_credentials()
         .max_age(3600)
 }
-
-// TODO: use cargo features to conditionally construct the
-// sdk abstracting trait
-// #[cfg(feature = "agones_sdk")]
-// #[cfg(not(feature = "agones_sdk"))]
