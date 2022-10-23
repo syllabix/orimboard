@@ -1,0 +1,4 @@
+# Overrides values from: https://github.com/googleforgames/agones/blob/release-1.26.0/install/helm/agones/values.yaml
+gameservers:
+  namespaces:
+    - board
