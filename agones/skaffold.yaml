@@ -1,6 +1,15 @@
 apiVersion: skaffold/v2beta29
 kind: Config
 metadata:
+  name: pre-agones
+deploy:
+  kubectl:
+    manifests:
+      - k8s/*.yml
+---
+apiVersion: skaffold/v2beta29
+kind: Config
+metadata:
   name: agones
 deploy:
   helm:
@@ -10,3 +19,8 @@ deploy:
         namespace: agones-sys
         createNamespace: true
         repo: https://agones.dev/chart/stable
+        valuesFiles:
+          - "helm/values.yaml"
+requires:
+  - configs:
+      - "pre-agones"

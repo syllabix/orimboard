@@ -49,16 +49,16 @@ async fn main() -> std::io::Result<()> {
     .bind((host, port))?
     .run();
     
-    tokio::join!(server, agones_init());
+    let _ = tokio::join!(server, agones_init());
 
     Ok(())
 }
 
-#[cfg(feature = "agones_enabled")]
+#[cfg(feature = "agones_sdk")]
 async fn agones_init() -> std::io::Result<()> {
     use std::time::Duration;
 
-    log::info!("Connecting to Agones sidecar...");
+    log::info!("Connecting to Agones SDK sidecar...");
     let mut sdk = agones::Sdk::new(None /* default port */, None /* keep_alive */)
     .await
     .expect("failed to connect to SDK server");
@@ -75,15 +75,16 @@ async fn agones_init() -> std::io::Result<()> {
             loop {
                 tokio::select! {
                     _ = interval.tick() => {
+                        log::info!("Sending health check heartbeat...");
                         if health_tx
                             .send(())
                             .await.is_err() {
-                            eprintln!("Health check receiver was dropped");
-                            break;
+                                log::error!("Health check receiver was dropped");
+                                break;
                         }
                     }
                     _ = &mut rx => {
-                        println!("Health check task canceled");
+                        log::info!("Health check task canceled");
                         break;
                     }
                 }
@@ -92,10 +93,53 @@ async fn agones_init() -> std::io::Result<()> {
 
         tx
     };
+
+    let _watch = {
+        let mut watch_client = sdk.clone();
+        let (tx, mut rx) = tokio::sync::oneshot::channel::<()>();
+
+        tokio::task::spawn(async move {
+            println!("Starting to watch GameServer updates...");
+            match watch_client.watch_gameserver().await {
+                Err(e) => log::warn!("Failed to watch for GameServer updates: {}", e),
+                Ok(mut stream) => loop {
+                    tokio::select! {
+                        gs = stream.message() => {
+                            match gs {
+                                Ok(Some(gs)) => {
+                                    log::info!("GameServer Update, name: {}", gs.object_meta.unwrap().name);
+                                    log::info!("GameServer Update, state: {}", gs.status.unwrap().state);
+                                }
+                                Ok(None) => {
+                                    log::info!("Server closed the GameServer watch stream");
+                                    break;
+                                }
+                                Err(e) => {
+                                    log::warn!("GameServer Update stream encountered an error: {}", e);
+                                }
+                            }
+
+                        }
+                        _ = &mut rx => {
+                            log::info!("Shutting down GameServer watch loop");
+                            break;
+                        }
+                    }
+                },
+            }
+        });
+
+        tx
+    };
+
+    sdk.ready()
+    .await
+    .expect("Can't mark game session as ready");
+
     Ok(())
 }
 
-#[cfg(not(feature = "agones_enabled"))]
+#[cfg(not(feature = "agones_sdk"))]
 async fn agones_init() -> std::io::Result<()> {
     log::info!("Local run; Agones not enabled!");
     Ok(())

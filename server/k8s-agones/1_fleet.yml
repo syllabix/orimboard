@@ -4,12 +4,14 @@ metadata:
   name: board-server
   namespace: board
 spec:
-  replicas: 5
+  replicas: 1
   template:
     spec:
       ports:
       - name: default
+        portPolicy: Dynamic # Default is 'Dynamic'
         containerPort: 8080
+        protocol: TCP
       template:
         spec:
           containers:
