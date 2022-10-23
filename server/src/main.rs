@@ -33,11 +33,9 @@ async fn main() -> std::io::Result<()> {
         )
     })?;
 
-    manager.start_health_check();
-
     log::info!("starting board server at {}:{}...", &host, &port);
     let user_registry = web::Data::new(user::Registry::new());
-    let board_server = web::Data::new(Registry::new());
+    let board_server = web::Data::new(Registry::new(manager.spaces_handle()));
 
     manager.ready().await.map_err(|e| {
         Error::new(
@@ -50,7 +48,7 @@ async fn main() -> std::io::Result<()> {
         let logger = Logger::default();
 
         App::new()
-            .wrap(cors_config())
+  //          .wrap(cors_config())
             .wrap(logger)
             .route("/healthz", web::get().to(handler::health_check))
             .service(

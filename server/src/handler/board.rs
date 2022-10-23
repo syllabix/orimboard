@@ -1,5 +1,3 @@
-use std::time::Instant;
-
 use actix_web::{
     body::BoxBody,
     http::{header::ContentType, StatusCode},
@@ -78,7 +76,8 @@ pub async fn connect(
 ) -> Result<HttpResponse, Error> {
     let user = get_user(&req, users)?;
     let space_id = get_space_id(&req)?;
-    let space = spaces.get_or_create(space_id);
+    let space = spaces.get_or_create(space_id)
+        .await;
 
     ws::start(
         User::new(user.id.into(), user.name, user.color, space.clone()),

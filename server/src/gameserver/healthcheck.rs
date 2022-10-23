@@ -1,24 +1,24 @@
 use std::time::Duration;
 
-use tokio::sync::oneshot::Sender;
+use tokio::{sync::oneshot, task};
 
 #[cfg(feature = "agones_sdk")]
 pub struct HealthChecker {
-    sdk: agones::Sdk,
-    tx: Option<Sender<()>>,
+    _tx: oneshot::Sender<()>
 }
 
 #[cfg(feature = "agones_sdk")]
 impl HealthChecker {
-    pub fn new(sdk: agones::Sdk) -> HealthChecker {
-        HealthChecker { sdk, tx: None }
+    pub fn new(sdk: &agones::Sdk) -> HealthChecker {
+        log::info!("Starting health check via agones...");
+        HealthChecker { _tx: HealthChecker::create_channel(sdk) }
     }
 
-    pub fn start(&mut self) {
-        let health_tx = self.sdk.health_check();
-        let (tx, mut rx) = tokio::sync::oneshot::channel::<()>();
+    fn create_channel(sdk: &agones::Sdk) -> oneshot::Sender<()> {
+        let health_tx = sdk.health_check();
+        let (tx, mut rx) = oneshot::channel::<()>();
 
-        tokio::task::spawn(async move {
+        task::spawn(async move {
             let mut interval = tokio::time::interval(Duration::from_secs(2));
 
             loop {
@@ -41,6 +41,6 @@ impl HealthChecker {
             }
         });
 
-        self.tx = Some(tx);
+        tx
     }
 }

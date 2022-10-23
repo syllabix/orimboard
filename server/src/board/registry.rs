@@ -1,29 +1,35 @@
 use actix::{Actor, Addr};
 use dashmap::DashMap;
+use tokio::sync::mpsc::Sender;
 
 use super::{
     message::{SpaceInfo, SpaceInfoRequest},
     space::{self, Space},
 };
 
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub struct Registry {
     spaces: DashMap<space::ID, Addr<Space>>,
+    on_space_loaded: Sender<space::ID>
 }
 
 impl Registry {
-    pub fn new() -> Registry {
+    pub fn new(on_space_loaded: Sender<usize>) -> Registry {
         Registry {
             spaces: Default::default(),
+            on_space_loaded
         }
     }
 
-    pub fn get_or_create(&self, id: space::ID) -> Addr<Space> {
+    pub async fn get_or_create(&self, id: space::ID) -> Addr<Space> {
         if let Some(addr) = self.spaces.get(&id) {
             return addr.clone();
         }
 
         let space = Space::new(id).start();
+        let _ = self.on_space_loaded.send(id)
+         .await;
+
         self.spaces.insert(id, space.clone());
         return space;
     }
