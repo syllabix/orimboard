@@ -1,16 +1,16 @@
 use std::time::Duration;
 
-
-use agones::Sdk;
 use tokio::sync::oneshot::Sender;
 
-pub struct HealthChecker<'a> {
-    sdk: &'a agones::Sdk,
+#[cfg(feature = "agones_sdk")]
+pub struct HealthChecker {
+    sdk: agones::Sdk,
     tx: Option<Sender<()>>,
 }
 
-impl<'a> HealthChecker<'a> {
-    pub fn new(sdk: &'a Sdk) -> HealthChecker {
+#[cfg(feature = "agones_sdk")]
+impl HealthChecker {
+    pub fn new(sdk: agones::Sdk) -> HealthChecker {
         HealthChecker { sdk, tx: None }
     }
 
