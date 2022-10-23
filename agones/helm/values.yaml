@@ -2,20 +2,22 @@
 agones:
   allocator:
     replicas: 2
-    disableMTLS: true
-    disableTLS: true
+    disableMTLS: true # do not do this in production! this is here to simplify the example
+    disableTLS: true # do not do this in production! this is here to simplify the example
     service:
       name: agones-allocator
+      # by default the allocator will be created as a LoadBalancer
+      # we do not want it exposed outside of the cluster, so setting it
+      # to Cluster IP
       serviceType: ClusterIP
-      loadBalancerIP: ""
-      loadBalancerSourceRanges: []
-      annotations: {}
+      # setup the allocator to handle http traffic
       http:
         enabled: true
         port: 80
         portName: http
         targetPort: 8443
         nodePort: 0
+      # disable grpc for now
       grpc:
         enabled: false
         port: 443
@@ -28,6 +30,7 @@ agones:
       http:
         enabled: true
         port: 8080
+        # called metrics to avoid name conflicts with the http port
         portName: metrics
 
 gameservers:
