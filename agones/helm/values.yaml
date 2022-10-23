@@ -1,4 +1,35 @@
 # Overrides values from: https://github.com/googleforgames/agones/blob/release-1.26.0/install/helm/agones/values.yaml
+agones:
+  allocator:
+    replicas: 2
+    disableMTLS: true
+    disableTLS: true
+    service:
+      name: agones-allocator
+      serviceType: ClusterIP
+      loadBalancerIP: ""
+      loadBalancerSourceRanges: []
+      annotations: {}
+      http:
+        enabled: true
+        port: 80
+        portName: http
+        targetPort: 8443
+        nodePort: 0
+      grpc:
+        enabled: false
+        port: 443
+        portName: grpc
+        targetPort: 8443
+        nodePort: 0
+    serviceMetrics:
+      name: agones-allocator-metrics-service
+      annotations: {}
+      http:
+        enabled: true
+        port: 8080
+        portName: metrics
+
 gameservers:
   namespaces:
     - board

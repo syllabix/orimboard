@@ -19,6 +19,7 @@ COPY --from=builder /build/target/release/orim-board-server /app/
 
 ENV PORT "8888"
 ENV HOST "0.0.0.0"
+ENV RUST_LOG "info"
 ENV CORS_ALLOW_ORIGIN "http://orimboard.io"
 
 CMD ["./orim-board-server"]

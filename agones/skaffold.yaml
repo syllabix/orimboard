@@ -14,7 +14,7 @@ metadata:
 deploy:
   helm:
     releases:
-      - name: agones-rel
+      - name: orimservers
         remoteChart: agones
         namespace: agones-sys
         createNamespace: true
