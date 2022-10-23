@@ -48,7 +48,7 @@ async fn main() -> std::io::Result<()> {
         let logger = Logger::default();
 
         App::new()
-            .wrap(cors_config())
+  //          .wrap(cors_config())
             .wrap(logger)
             .route("/healthz", web::get().to(handler::health_check))
             .service(

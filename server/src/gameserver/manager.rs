@@ -17,6 +17,8 @@ pub enum Error {
     ReadinessIssue(String),
     #[error("failed to cleanly shutdown the server: `{0}`")]
     ShutdownFailure(String),
+    #[error("failed reserve the board server: `{0}`")]
+    ReservationFailed(String),
 }
 
 #[cfg(feature = "agones_sdk")]
