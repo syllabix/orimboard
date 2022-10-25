@@ -44,6 +44,10 @@ async fn main() -> std::io::Result<()> {
         .await
         .unwrap();
 
+    manager.board_events()
+        .blocking_send(BoardEvent::Ready)
+        .unwrap();
+    
     HttpServer::new(move || {
         let logger = Logger::default();
 
