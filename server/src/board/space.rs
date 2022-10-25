@@ -84,7 +84,7 @@ impl Handler<Disconnect> for Space {
             &msg.user_id,
             &self.id
         );
-        self.space_callback.blocking_send(BoardEvent::UserLeft { board_id: self.id, user_id: msg.user.id })
+        self.space_callback.blocking_send(BoardEvent::UserLeft { board_id: self.id, user_id: msg.user_id })
             .expect("Can't publish user left event");
         self.unregister(msg.user_id);
         self.broadcast(Update {
