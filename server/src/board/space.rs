@@ -63,8 +63,13 @@ impl Handler<Connect> for Space {
 
     fn handle(&mut self, msg: Connect, _ctx: &mut Self::Context) -> Self::Result {
         log::debug!("user {} connecting to space {}", &msg.user.id, &self.id);
-        self.space_callback.blocking_send(BoardEvent::UserConnected { board_id: self.id, user_id: msg.user.id })
-            .expect("Can't publish user connect event");
+
+        _ = Box::pin(async {
+            self.space_callback.send(BoardEvent::UserConnected { board_id: self.id, user_id: msg.user.id })
+                .await
+                .expect("Can't publish user connect event");
+            }
+        );
 
         self.register(msg.user.clone(), msg.addr);
         self.broadcast(Update {
@@ -84,8 +89,14 @@ impl Handler<Disconnect> for Space {
             &msg.user_id,
             &self.id
         );
-        self.space_callback.blocking_send(BoardEvent::UserLeft { board_id: self.id, user_id: msg.user_id })
-            .expect("Can't publish user left event");
+
+        _ = Box::pin(async {
+            self.space_callback.send(BoardEvent::UserLeft { board_id: self.id, user_id: msg.user_id })
+                .await
+                .expect("Can't publish user connect event");
+            }
+        );
+
         self.unregister(msg.user_id);
         self.broadcast(Update {
             user_id: msg.user_id,

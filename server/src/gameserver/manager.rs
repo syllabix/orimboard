@@ -93,7 +93,7 @@ impl Manager {
         sdk.allocate()
             .await
             .and({ 
-                sdk.set_label("orimboard.io/space_id", space_id.to_string())
+                sdk.set_label("orimboard-space-id", space_id.to_string())
                 .await
              })
             .expect(format!("Can't reserve space {}", space_id).as_str())

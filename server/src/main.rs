@@ -27,7 +27,7 @@ async fn main() -> std::io::Result<()> {
 
     env_logger::init();
 
-    let mut manager = gameserver::Manager::setup().await
+    let manager = gameserver::Manager::setup().await
         .map_err(|e| {
             Error::new(
                 ErrorKind::Other,
@@ -40,7 +40,8 @@ async fn main() -> std::io::Result<()> {
     let board_server = web::Data::new(Registry::new(manager.board_events()));
 
     manager.board_events()
-        .blocking_send(BoardEvent::Ready)
+        .send(BoardEvent::Ready)
+        .await
         .unwrap();
     
     HttpServer::new(move || {
@@ -71,7 +72,8 @@ async fn main() -> std::io::Result<()> {
     .map_err(|e| Error::new(ErrorKind::Other, e))?;
 
     manager.board_events()
-        .blocking_send(BoardEvent::Shutdown)
+        .send(BoardEvent::Shutdown)
+        .await
         .unwrap();
 
     Ok(())
