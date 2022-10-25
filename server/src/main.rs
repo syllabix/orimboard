@@ -45,7 +45,8 @@ async fn main() -> std::io::Result<()> {
         .unwrap();
 
     manager.board_events()
-        .blocking_send(BoardEvent::Ready)
+        .send(BoardEvent::Ready)
+        .await
         .unwrap();
     
     HttpServer::new(move || {
