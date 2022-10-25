@@ -11,6 +11,7 @@ use actix_web::middleware::Logger;
 use actix_web::{web, App, HttpServer};
 
 use crate::board::Registry;
+use crate::gameserver::BoardEvent;
 
 #[tokio::main]
 async fn main() -> std::io::Result<()> {
@@ -26,24 +27,22 @@ async fn main() -> std::io::Result<()> {
 
     env_logger::init();
 
-    let mut manager = gameserver::Manager::setup().await.map_err(|e| {
-        Error::new(
-            ErrorKind::Other,
-            format!("failed to set up game server manager {}", e),
-        )
-    })?;
+    let mut manager = gameserver::Manager::setup().await
+        .map_err(|e| {
+            Error::new(
+                ErrorKind::Other,
+                format!("failed to set up game server manager {}", e),
+            )
+        })?;
 
     log::info!("starting board server at {}:{}...", &host, &port);
     let user_registry = web::Data::new(user::Registry::new());
-    let board_server = web::Data::new(Registry::new(manager.spaces_handle()));
+    let board_server = web::Data::new(Registry::new(manager.board_events()));
 
-    manager.ready().await.map_err(|e| {
-        Error::new(
-            ErrorKind::Other,
-            format!("unable to mark server as ready {}", e),
-        )
-    })?;
-
+    manager.board_events()
+        .blocking_send(BoardEvent::Ready)
+        .unwrap();
+    
     HttpServer::new(move || {
         let logger = Logger::default();
 
@@ -71,12 +70,9 @@ async fn main() -> std::io::Result<()> {
     .await
     .map_err(|e| Error::new(ErrorKind::Other, e))?;
 
-    manager.shutdown().await.map_err(|e| {
-        Error::new(
-            ErrorKind::Other,
-            format!("failed to shutdown game server process {}", e),
-        )
-    })?;
+    manager.board_events()
+        .blocking_send(BoardEvent::Shutdown)
+        .unwrap();
 
     Ok(())
 }

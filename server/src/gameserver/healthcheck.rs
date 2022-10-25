@@ -4,14 +4,14 @@ use tokio::{sync::oneshot, task};
 
 #[cfg(feature = "agones_sdk")]
 pub struct HealthChecker {
-    _tx: oneshot::Sender<()>
+    _sender: oneshot::Sender<()>
 }
 
 #[cfg(feature = "agones_sdk")]
 impl HealthChecker {
     pub fn new(sdk: &agones::Sdk) -> HealthChecker {
         log::info!("Starting health check via agones...");
-        HealthChecker { _tx: HealthChecker::create_channel(sdk) }
+        HealthChecker { _sender: HealthChecker::create_channel(sdk) }
     }
 
     fn create_channel(sdk: &agones::Sdk) -> oneshot::Sender<()> {

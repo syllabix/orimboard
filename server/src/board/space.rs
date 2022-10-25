@@ -1,6 +1,9 @@
 use std::{collections::HashMap, time::SystemTime};
 
 use actix::{Actor, Context, Handler, Recipient};
+use tokio::sync::mpsc::Sender;
+
+use crate::gameserver::BoardEvent;
 
 use super::{
     component::UserProfile,
@@ -15,14 +18,16 @@ pub struct Space {
     id: ID,
     storage: storage::Service,
     recipients: HashMap<usize, Recipient<Update>>,
+    space_callback: Sender<BoardEvent>
 }
 
 impl Space {
-    pub fn new(id: ID) -> Space {
+    pub fn new(id: ID, space_callback: Sender<BoardEvent>) -> Space {
         Space {
             id,
             recipients: HashMap::new(),
             storage: storage::Service::new(id),
+            space_callback
         }
     }
 
@@ -58,6 +63,9 @@ impl Handler<Connect> for Space {
 
     fn handle(&mut self, msg: Connect, _ctx: &mut Self::Context) -> Self::Result {
         log::debug!("user {} connecting to space {}", &msg.user.id, &self.id);
+        self.space_callback.blocking_send(BoardEvent::UserConnected { board_id: self.id, user_id: msg.user.id })
+            .expect("Can't publish user connect event");
+
         self.register(msg.user.clone(), msg.addr);
         self.broadcast(Update {
             user_id: msg.user.id,
@@ -76,6 +84,8 @@ impl Handler<Disconnect> for Space {
             &msg.user_id,
             &self.id
         );
+        self.space_callback.blocking_send(BoardEvent::UserLeft { board_id: self.id, user_id: msg.user.id })
+            .expect("Can't publish user left event");
         self.unregister(msg.user_id);
         self.broadcast(Update {
             user_id: msg.user_id,

@@ -2,6 +2,8 @@ use actix::{Actor, Addr};
 use dashmap::DashMap;
 use tokio::sync::mpsc::Sender;
 
+use crate::gameserver::BoardEvent;
+
 use super::{
     message::{SpaceInfo, SpaceInfoRequest},
     space::{self, Space},
@@ -10,14 +12,14 @@ use super::{
 #[derive(Debug)]
 pub struct Registry {
     spaces: DashMap<space::ID, Addr<Space>>,
-    on_space_loaded: Sender<space::ID>
+    space_callback: Sender<BoardEvent>
 }
 
 impl Registry {
-    pub fn new(on_space_loaded: Sender<usize>) -> Registry {
+    pub fn new(space_callback: Sender<BoardEvent>) -> Registry {
         Registry {
             spaces: Default::default(),
-            on_space_loaded
+            space_callback
         }
     }
 
@@ -26,9 +28,9 @@ impl Registry {
             return addr.clone();
         }
 
-        let space = Space::new(id).start();
-        let _ = self.on_space_loaded.send(id)
-         .await;
+        let space = Space::new(id, self.space_callback.clone()).start();
+        let _ = self.space_callback.send(BoardEvent::BoardLoaded { id })
+            .await;
 
         self.spaces.insert(id, space.clone());
         return space;
