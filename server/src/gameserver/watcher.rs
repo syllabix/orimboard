@@ -33,6 +33,7 @@ impl Watcher {
                                 }
                                 Err(e) => {
                                     log::error!("GameServer Update stream encountered an error: {}", e);
+                                    break;
                                 }
                             }
                         }

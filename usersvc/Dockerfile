@@ -14,9 +14,11 @@ RUN cargo build --release
 # Debian 11 (bullseye)
 FROM debian:11-slim
 
+RUN apt update
+RUN apt install curl -y
+
 WORKDIR /app
 COPY --from=builder /build/target/release/orim-user-svc /app/
-
 
 ENV HOST "0.0.0.0"
 ENV RUST_LOG "debug"

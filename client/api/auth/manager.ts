@@ -70,8 +70,6 @@ export class Manager {
   };
 }
 
-const AuthManager = new Manager(
-  typeof window === "undefined"
-);
+const AuthManager = new Manager(typeof window === "undefined");
 
 export default AuthManager;

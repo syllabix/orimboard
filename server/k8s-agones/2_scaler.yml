@@ -19,10 +19,10 @@ spec:
       # The FleetAutoscaler will scale the fleet up and down trying to maintain this buffer,
       # as instances are being allocated or terminated
       # it can be specified either in absolute (i.e. 5) or percentage format (i.e. 5%)
-      bufferSize: 1
+      bufferSize: 2
       # minimum fleet size to be set by this FleetAutoscaler.
       # if not specified, the actual minimum fleet size will be bufferSize
-      minReplicas: 1
+      minReplicas: 2
       # maximum fleet size that can be set by this FleetAutoscaler
       # required
       maxReplicas: 20

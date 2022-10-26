@@ -5,6 +5,7 @@ use std::io::{Error, ErrorKind};
 use actix_web::middleware::Logger;
 use actix_web::{web, App, HttpServer};
 
+mod board;
 mod handler;
 mod user;
 
@@ -12,9 +13,8 @@ mod user;
 async fn main() -> std::io::Result<()> {
     std::env::set_var("RUST_BACKTRACE", "1");
     std::env::set_var("RUST_LOG", "debug");
-
-    // let log_level = std::env::var("RUST_LOG").unwrap_or("debug".to_string());
-    // std::env::set_var("RUST_LOG", log_level);
+    let log_level = std::env::var("RUST_LOG").unwrap_or("debug".to_string());
+    std::env::set_var("RUST_LOG", log_level);
 
     let host = std::env::var("HOST").unwrap_or("127.0.0.1".to_string());
     let port = std::env::var("PORT")
@@ -25,6 +25,7 @@ async fn main() -> std::io::Result<()> {
 
     log::info!("starting user service server at {}:{}...", &host, &port);
     let user_registry = web::Data::new(user::Registry::new());
+    let board_client = web::Data::new(board::Client::new());
 
     HttpServer::new(move || {
         let logger = Logger::default();
@@ -39,6 +40,11 @@ async fn main() -> std::io::Result<()> {
                     .route("", web::put().to(handler::user::create))
                     .route("", web::get().to(handler::user::get_all))
                     .route("/{id}", web::get().to(handler::user::get)),
+            )
+            .service(
+                web::scope("/v1/board")
+                    .app_data(board_client.clone())
+                    .route("/{id}", web::get().to(handler::board::allocate)),
             )
     })
     .bind((host, port))?

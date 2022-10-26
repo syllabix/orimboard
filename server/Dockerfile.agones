@@ -14,6 +14,9 @@ RUN cargo build --release --features agones_sdk
 # Debian 11 (bullseye)
 FROM debian:11-slim
 
+RUN apt update
+RUN apt install curl -y
+
 WORKDIR /app
 COPY --from=builder /build/target/release/orim-board-server /app/
 
