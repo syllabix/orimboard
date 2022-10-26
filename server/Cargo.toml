@@ -15,7 +15,6 @@ dashmap = "5.4.0"
 derive_more = "0.99.17"
 env_logger = "0.9.0"
 log = "0.4.17"
-nanoid = "0.4.0"
 rand = "0.8.5"
 random_color = "0.6.1"
 serde = { version = "1.0.144", features = ["derive"] }
@@ -24,6 +23,7 @@ serde_millis = "0.1.1"
 tokio = { version = "1.21.2", features = ["full"] }
 agones = { git = 'https://github.com/googleforgames/agones.git', branch = 'release-1.26.0', optional = true }
 thiserror = "1.0.37"
+reqwest = { version = "0.11", features = ["json", "rustls-tls"], default-features = false }
 
 [features]
 agones_sdk = ["agones"]

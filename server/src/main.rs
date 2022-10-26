@@ -35,7 +35,7 @@ async fn main() -> std::io::Result<()> {
     })?;
 
     log::info!("starting board server at {}:{}...", &host, &port);
-    let user_registry = web::Data::new(user::Registry::new());
+    let user_client = web::Data::new(user::Client::new());
     let board_server = web::Data::new(Registry::new(manager.board_events()));
 
     manager
@@ -48,20 +48,13 @@ async fn main() -> std::io::Result<()> {
         let logger = Logger::default();
 
         App::new()
-            //          .wrap(cors_config())
+            .wrap(cors_config())
             .wrap(logger)
             .route("/healthz", web::get().to(handler::health_check))
             .service(
-                web::scope("/v1/user")
-                    .app_data(user_registry.clone())
-                    .route("", web::put().to(handler::user::create))
-                    .route("", web::get().to(handler::user::get_all))
-                    .route("/{id}", web::get().to(handler::user::get)),
-            )
-            .service(
                 web::scope("/v1/board")
                     .app_data(board_server.clone())
-                    .app_data(user_registry.clone())
+                    .app_data(user_client.clone())
                     .route("/{id}/connect", web::get().to(handler::board::connect))
                     .route("/{id}", web::get().to(handler::board::get_state)),
             )
