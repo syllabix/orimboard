@@ -20,7 +20,7 @@ deploy:
         createNamespace: true
         repo: https://agones.dev/chart/stable
         valuesFiles:
-          - "helm/values.yaml"
+          - helm/values.yaml
 requires:
   - configs:
       - "pre-agones"

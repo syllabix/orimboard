@@ -1,6 +1,6 @@
 use std::{collections::HashMap, time::SystemTime};
 
-use actix::{Actor, Context, Handler, Recipient};
+use actix::{Actor, Context, Handler, Recipient, WrapFuture, ResponseActFuture, ActorFutureExt};
 use tokio::sync::mpsc::Sender;
 
 use crate::gameserver::BoardEvent;
@@ -58,58 +58,68 @@ impl Actor for Space {
 }
 
 impl Handler<Connect> for Space {
-    type Result = ();
+    type Result = ResponseActFuture<Space, ()>;
 
     fn handle(&mut self, msg: Connect, _ctx: &mut Self::Context) -> Self::Result {
-        log::debug!("user {} connecting to space {}", &msg.user.id, &self.id);
+        log::info!("user {} connecting to space {}", &msg.user.id, &self.id);
 
-        _ = Box::pin(async {
-            self.space_callback
-                .send(BoardEvent::UserConnected {
-                    board_id: self.id,
+        let board_id = self.id;
+        let callback = self.space_callback.clone();
+        Box::pin(
+            async move {
+                callback
+                    .send(BoardEvent::UserConnected {
+                        board_id: board_id,
+                        user_id: msg.user.id,
+                    })
+                    .await
+                    .expect("Can't publish user connect event")
+            }
+            .into_actor(self)
+            .map(|_, spc, _ctx| {
+                spc.register(msg.user.clone(), msg.addr);
+                spc.broadcast(Update {
                     user_id: msg.user.id,
+                    action: Action::Join { payload: msg.user },
+                    created_at: SystemTime::now(),
                 })
-                .await
-                .expect("Can't publish user connect event");
-        });
-
-        self.register(msg.user.clone(), msg.addr);
-        self.broadcast(Update {
-            user_id: msg.user.id,
-            action: Action::Join { payload: msg.user },
-            created_at: SystemTime::now(),
-        })
+            })
+        )
     }
 }
 
 impl Handler<Disconnect> for Space {
-    type Result = ();
+    type Result = ResponseActFuture<Space, ()>;
 
     fn handle(&mut self, msg: Disconnect, _ctx: &mut Self::Context) -> Self::Result {
-        log::debug!(
+        log::info!(
             "user {} disconnecting from space {}",
             &msg.user_id,
             &self.id
         );
 
-        _ = Box::pin(async {
-            self.space_callback
-                .send(BoardEvent::UserLeft {
-                    board_id: self.id,
+        let board_id = self.id;
+        let callback = self.space_callback.clone();
+        Box::pin(
+            async move {
+                callback
+                    .send(BoardEvent::UserLeft {
+                        board_id: board_id,
+                        user_id: msg.user_id,
+                    })
+                    .await
+                    .expect("Can't publish user disconnect event")
+            }
+            .into_actor(self)
+            .map(move |_, spc, _ctx| {
+                spc.unregister(msg.user_id);
+                spc.broadcast(Update {
                     user_id: msg.user_id,
+                    action: Action::Leave { payload: msg.user_id },
+                    created_at: SystemTime::now(),
                 })
-                .await
-                .expect("Can't publish user connect event");
-        });
-
-        self.unregister(msg.user_id);
-        self.broadcast(Update {
-            user_id: msg.user_id,
-            action: Action::Leave {
-                payload: msg.user_id,
-            },
-            created_at: SystemTime::now(),
-        })
+            })
+        )
     }
 }
 

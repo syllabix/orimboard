@@ -23,7 +23,7 @@ pub enum Error {
 pub struct Manager {
     sdk: Sdk,
     _health_checker: HealthChecker,
-    _watcher: Watcher,
+ //   _watcher: Watcher,
     board_events: mpsc::Sender<BoardEvent>,
 }
 
@@ -45,13 +45,13 @@ impl Manager {
             .await
             .map_err(|e| Error::SetupFailure(format!("{}", e)))?;
 
-        let watcher = Watcher::new(&sdk);
+       //  let watcher = Watcher::new(&sdk);
         let health_checker = HealthChecker::new(&sdk);
         let board_events = Manager::new_spaces_channel(&sdk);
         Ok(Manager {
             sdk,
             _health_checker: health_checker,
-            _watcher: watcher,
+          //  _watcher: watcher,
             board_events,
         })
     }
@@ -82,8 +82,15 @@ impl Manager {
     }
 
     async fn ready(sdk: &mut Sdk) {
-        sdk.ready().await.expect("Can't send ready signal.")
-    }
+        sdk.ready()
+            .await
+            .and({ 
+                let mut alpha_sdk = sdk.alpha().clone();
+                alpha_sdk.set_player_capacity(1000)
+                    .await
+            })
+            .expect("Can't send ready signal.")
+        }
 
     async fn shutdown(sdk: &mut Sdk, space_id: usize) {
         log::info!("Space id={} disconnected. Shutdown server", space_id);
@@ -91,16 +98,14 @@ impl Manager {
     }
 
     async fn allocate(sdk: &mut Sdk, space_id: usize) {
-        log::debug!("Allocating for space id={:?}", space_id);
-        sdk.set_label(format!("gs-{}", space_id), "space-id")
+        log::info!("Allocating for space id={:?}", space_id);
+        sdk.allocate()
             .await
+            .and({ 
+                sdk.set_label("orimboard-space-id", space_id.to_string())
+                .await
+             })
             .expect(format!("Can't reserve space {}", space_id).as_str())
-        // sdk.allocate()
-        //     .await
-        //     .and({
-
-        //     })
-        //     .expect(format!("Can't reserve space {}", space_id).as_str())
     }
 
     async fn user_connected(sdk: &mut Sdk, board_id: usize, user_id: usize) {
