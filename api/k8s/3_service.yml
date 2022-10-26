@@ -2,14 +2,14 @@ apiVersion: v1
 kind: Service
 metadata:
   labels:
-    app: user-svc
-  name: user-svc
-  namespace: user
+    app: api
+  name: api
+  namespace: api
 spec:
   ports:
   - port: 80
     protocol: TCP
     targetPort: 8080
   selector:
-    app: user-svc
+    app: api
   type: NodePort

@@ -1,11 +1,11 @@
 FROM rust:1.64-slim as builder
 
 WORKDIR /build
-RUN cargo init --bin --name orim-user-svc
+RUN cargo init --bin --name orim-api
 COPY Cargo.lock Cargo.toml /build/
 
 RUN cargo build --release
-RUN rm src/*.rs && rm target/release/deps/orim_user_svc*
+RUN rm src/*.rs && rm target/release/deps/orim_api*
 
 COPY src /build/src
 
@@ -18,10 +18,10 @@ RUN apt update
 RUN apt install curl -y
 
 WORKDIR /app
-COPY --from=builder /build/target/release/orim-user-svc /app/
+COPY --from=builder /build/target/release/orim-api /app/
 
 ENV HOST "0.0.0.0"
 ENV RUST_LOG "debug"
 ENV CORS_ALLOW_ORIGIN "http://orimboard.io"
 
-CMD ["./orim-user-svc"]
+CMD ["./orim-api"]

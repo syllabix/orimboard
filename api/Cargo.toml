@@ -1,5 +1,5 @@
 [package]
-name = "orim-user-svc"
+name = "orim-api"
 version = "0.1.0"
 edition = "2021"
 

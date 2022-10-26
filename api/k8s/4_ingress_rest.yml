@@ -1,10 +1,10 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: user-svc-rest
+  name: rest-api
   annotations:
     nginx.ingress.kubernetes.io/rewrite-target: /$1
-  namespace: user
+  namespace: api
 spec:
   rules:
     - host: orimboard.io
@@ -14,6 +14,6 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: user-svc
+                name: api
                 port:
                   number: 80

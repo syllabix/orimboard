@@ -2,21 +2,21 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app: user-svc
-  name: user-svc
-  namespace: user
+    app: api
+  name: api
+  namespace: api
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: user-svc
+      app: api
   strategy: {}
   template:
     metadata:
       labels:
-        app: user-svc
+        app: api
     spec:
       containers:
-      - image: orim/user-svc:latest
-        name: user-svc
+      - image: orim/api:latest
+        name: api
         imagePullPolicy: IfNotPresent

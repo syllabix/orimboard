@@ -1,10 +1,10 @@
 apiVersion: skaffold/v2beta29
 kind: Config
 metadata:
-  name: user-svc
+  name: api
 build:
   artifacts:
-  - image: orim/user-svc
+  - image: orim/api
     docker:
       dockerfile: Dockerfile
 deploy:
