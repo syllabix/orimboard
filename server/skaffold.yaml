@@ -3,6 +3,8 @@ kind: Config
 metadata:
   name: server
 build:
+  platforms:
+    - linux/amd64
   artifacts:
   - image: gcr.io/theta-computing-366519/board-server
     docker:

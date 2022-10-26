@@ -15,7 +15,7 @@ spec:
       template:
         spec:
           containers:
-            - image: orim/board-server:latest
+            - image: gcr.io/theta-computing-366519/board-server
               name: board-server
               imagePullPolicy: IfNotPresent
               resources:

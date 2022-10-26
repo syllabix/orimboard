@@ -1,12 +1,6 @@
-FROM rust:alpine AS builder
+FROM rust:1.64-slim as builder
 
 WORKDIR /build
-
-# Install target platform (Cross-Compilation) --> Needed for Alpine
-RUN rustup target add x86_64-unknown-linux-musl
-RUN apk update
-RUN apk add --no-cache musl-dev protoc
-
 RUN cargo init --bin --name orim-board-server
 COPY Cargo.lock Cargo.toml /build/
 
@@ -17,7 +11,8 @@ COPY src /build/src
 
 RUN cargo build --release --features agones_sdk
 
-FROM alpine:latest AS runtime
+# Debian 11 (bullseye)
+FROM debian:11-slim
 
 WORKDIR /app
 COPY --from=builder /build/target/release/orim-board-server /app/
