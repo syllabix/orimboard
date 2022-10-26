@@ -3,6 +3,8 @@ kind: Fleet
 metadata:
   name: board-server
   namespace: board
+  labels:
+    app: board-server
 spec:
   replicas: 1
   template:

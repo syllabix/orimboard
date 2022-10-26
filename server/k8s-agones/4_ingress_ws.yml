@@ -1,0 +1,17 @@
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: board-server-ws
+  annotations:
+    # https://kubernetes.github.io/ingress-nginx/user-guide/miscellaneous/#websockets
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-semd-timeout: "3600"
+    # nginx.ingress.kubernetes.io/rewrite-target: /$1
+  namespace: board
+spec:
+  defaultBackend:
+    service:
+      name: board-server
+      port:
+        number: 80
