@@ -26,6 +26,7 @@ async fn main() -> std::io::Result<()> {
 
     env_logger::init();
 
+    log::info!("let's get this started");
     let mut manager = gameserver::Manager::setup().await.map_err(|e| {
         Error::new(
             ErrorKind::Other,

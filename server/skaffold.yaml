@@ -4,9 +4,10 @@ metadata:
   name: server
 build:
   artifacts:
-  - image: orim/board-server
+  - image: gcr.io/theta-computing-366519/board-server
     docker:
       dockerfile: Dockerfile.agones
+  local: {}
 deploy:
   kubectl:
     manifests:

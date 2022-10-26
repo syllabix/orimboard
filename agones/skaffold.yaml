@@ -16,11 +16,11 @@ deploy:
     releases:
       - name: orimservers
         remoteChart: agones
-        namespace: agones-sys
+        namespace: agones-system
         createNamespace: true
         repo: https://agones.dev/chart/stable
         valuesFiles:
-          - "helm/values.yaml"
+          - helm/values.yaml
 requires:
   - configs:
-      - "pre-agones"
+      - pre-agones

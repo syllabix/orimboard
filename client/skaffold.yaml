@@ -4,7 +4,7 @@ metadata:
   name: client
 build:
   artifacts:
-  - image: orim/client
+  - image: gcr.io/theta-computing-366519/client
     docker:
       dockerfile: Dockerfile
 deploy:

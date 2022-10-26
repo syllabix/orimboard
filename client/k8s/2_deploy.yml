@@ -17,6 +17,13 @@ spec:
         app: site
     spec:
       containers:
-      - image: orim/client:latest
+      - image: gcr.io/theta-computing-366519/client:latest
         name: site
         imagePullPolicy: IfNotPresent
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "1"
+          limits:
+            memory: "256Mi"
+            cpu: "1"
