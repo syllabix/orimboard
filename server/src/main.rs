@@ -44,16 +44,11 @@ async fn main() -> std::io::Result<()> {
         .await
         .unwrap();
 
-    manager.board_events()
-        .send(BoardEvent::Ready)
-        .await
-        .unwrap();
-    
     HttpServer::new(move || {
         let logger = Logger::default();
 
         App::new()
-  //          .wrap(cors_config())
+            //          .wrap(cors_config())
             .wrap(logger)
             .route("/healthz", web::get().to(handler::health_check))
             .service(

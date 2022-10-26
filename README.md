@@ -24,6 +24,7 @@ then open multiple web browsers @ http://localhost:3000
 ### minikube quickstart
 
 orim can run on Kubernetes locally with `skaffold` and `minikube`. This setup was tested on MacOS with following versions:
+
 - `minikube` (>= 1.27.1)
 - `skaffold` (>= 1.39.2)
 - `virtualbox` (>= 6.1.38) **Required for MacOS** - for linux, you can safely skip this!
@@ -35,6 +36,7 @@ minikube delete # optional - deletes old minikube setup if exists.
 minikube start
 minikube addons enable ingress
 ```
+
 Note: On Mac, we need to use `minikube start --driver=virtualbox`, because networking with the default `docker` driver can be quite challenging and we need to use multiple tunnels that need to run on background :/
 
 2. Add IP address for `orimboard.io` into the `/etc/hosts` file (needs administrator access):
@@ -45,6 +47,7 @@ minikube ip # Returns the IP address of the minikube VM
 # Add following entry to the /etc/hosts (replacing the IP address)
 # 192.168.49.2 orimboard.io
 ```
+
 3. Trigger `skaffold dev` for auto-rebuild on source code update:
 
 ```
