@@ -25,7 +25,7 @@ spec:
       minReplicas: 2
       # maximum fleet size that can be set by this FleetAutoscaler
       # required
-      maxReplicas: 20
+      maxReplicas: 30
   # [Stage:Beta]
   # [FeatureFlag:CustomFasSyncInterval]
   # The autoscaling sync strategy
@@ -35,4 +35,4 @@ spec:
     # parameters of the fixedInterval sync
     fixedInterval:
       # the time in seconds between each auto scaling
-      seconds: 30
+      seconds: 2

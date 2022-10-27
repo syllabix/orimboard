@@ -3,7 +3,6 @@ use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug)]
-#[serde(rename_all = "camelCase")]
 pub enum GameServerState {
     Ready = 0,
     Allocated = 1,
@@ -12,25 +11,25 @@ pub enum GameServerState {
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 struct GameServerSelector {
-    match_labels: HashMap<String, String>,
-    game_server_state: GameServerState,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default)]
+    match_labels: Option<HashMap<String, String>>,
+    game_server_state: i8,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 struct AllocateRequest {
     namespace: String,
-    match_labels: Vec<GameServerSelector>,
+    game_server_selectors: Vec<GameServerSelector>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct AllocateResponse {
-    #[serde(rename = "gameServerName")]
     pub game_server_name: String,
     pub ports: Vec<Port>,
     pub address: String,
-
-    #[serde(rename = "nodeName")]
     pub node_name: String,
 }
 
@@ -83,22 +82,23 @@ impl Client {
         let url = "http://agones-allocator.agones-sys.svc.cluster.local/gameserverallocation";
         let mut board_id_label = HashMap::new();
         board_id_label.insert(
-            format!("agones.dev/sdk-{}", board_id),
+            format!("agones.dev/sdk-gs-{}", board_id),
             String::from("space-id"),
         );
         let req_body = AllocateRequest {
             namespace: String::from("board"),
-            match_labels: vec![
+            game_server_selectors: vec![
                 GameServerSelector {
-                    game_server_state: GameServerState::Allocated,
-                    match_labels: board_id_label,
+                    game_server_state: 1,
+                    match_labels: Some(board_id_label),
                 },
                 GameServerSelector {
-                    game_server_state: GameServerState::Ready,
-                    match_labels: HashMap::new(),
+                    game_server_state: 0,
+                    match_labels: None,
                 },
             ],
         };
+
         let result: AllocateResponse = self
             .http
             .post(url)
