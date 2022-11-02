@@ -10,7 +10,7 @@ spec:
       ports:
       - name: default
         portPolicy: Dynamic # Default is 'Dynamic'
-        containerPort: 8080
+        containerPort: 8888
         protocol: TCP
       template:
         spec:

@@ -1,29 +1,37 @@
 use actix::{Actor, Addr};
 use dashmap::DashMap;
+use tokio::sync::mpsc::Sender;
+
+use crate::gameserver::BoardEvent;
 
 use super::{
     message::{SpaceInfo, SpaceInfoRequest},
     space::{self, Space},
 };
 
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub struct Registry {
     spaces: DashMap<space::ID, Addr<Space>>,
+    space_callback: Sender<BoardEvent>
 }
 
 impl Registry {
-    pub fn new() -> Registry {
+    pub fn new(space_callback: Sender<BoardEvent>) -> Registry {
         Registry {
             spaces: Default::default(),
+            space_callback
         }
     }
 
-    pub fn get_or_create(&self, id: space::ID) -> Addr<Space> {
+    pub async fn get_or_create(&self, id: space::ID) -> Addr<Space> {
         if let Some(addr) = self.spaces.get(&id) {
             return addr.clone();
         }
 
-        let space = Space::new(id).start();
+        let space = Space::new(id, self.space_callback.clone()).start();
+        let _ = self.space_callback.send(BoardEvent::BoardLoaded { id })
+            .await;
+
         self.spaces.insert(id, space.clone());
         return space;
     }
