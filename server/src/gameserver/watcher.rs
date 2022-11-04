@@ -1,15 +1,15 @@
 use tokio::{sync::oneshot, task};
 
-#[cfg(feature = "agones_sdk")]
 pub struct Watcher {
-    _watcher: oneshot::Sender<()>
+    _watcher: oneshot::Sender<()>,
 }
 
-#[cfg(feature = "agones_sdk")]
 impl Watcher {
     pub fn new(sdk: &agones::Sdk) -> Watcher {
         log::info!("Watching gameserver state changes...");
-        Watcher { _watcher: Watcher::create_channel(sdk) }
+        Watcher {
+            _watcher: Watcher::create_channel(sdk),
+        }
     }
 
     fn create_channel(sdk: &agones::Sdk) -> oneshot::Sender<()> {
@@ -41,7 +41,7 @@ impl Watcher {
                             break;
                         }
                     }
-                }
+                },
             }
         });
 

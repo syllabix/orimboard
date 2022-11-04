@@ -7,7 +7,7 @@ import { getUser, User } from "api/user";
 export type SecurityProps = {
   props: {
     signedUp: boolean;
-    user?: User;
+    user: User | null;
   };
 };
 
@@ -24,6 +24,7 @@ export const securePageLoad = async (
       return {
         props: {
           signedUp: false,
+          user: null
         },
       };
     }
@@ -41,6 +42,7 @@ export const securePageLoad = async (
       return {
         props: {
           signedUp: false,
+          user: null
         },
       };
     }
@@ -49,6 +51,7 @@ export const securePageLoad = async (
   return {
     props: {
       signedUp: false,
+      user: null
     },
   };
 };

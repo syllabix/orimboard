@@ -18,7 +18,7 @@ pub struct Space {
     id: ID,
     storage: storage::Service,
     recipients: HashMap<usize, Recipient<Update>>,
-    space_callback: Sender<BoardEvent>
+    space_callback: Sender<BoardEvent>,
 }
 
 impl Space {
@@ -27,7 +27,7 @@ impl Space {
             id,
             recipients: HashMap::new(),
             storage: storage::Service::new(id),
-            space_callback
+            space_callback,
         }
     }
 
@@ -39,8 +39,7 @@ impl Space {
 
     fn register(&mut self, user: UserProfile, addr: Recipient<Update>) {
         self.recipients.insert(user.id, addr);
-        self.storage
-            .upsert(user.id, Action::Join { payload: user });
+        self.storage.upsert(user.id, Action::Join { payload: user });
     }
 
     fn unregister(&mut self, user_id: user::ID) -> Option<Recipient<Update>> {
@@ -65,11 +64,14 @@ impl Handler<Connect> for Space {
         log::debug!("user {} connecting to space {}", &msg.user.id, &self.id);
 
         _ = Box::pin(async {
-            self.space_callback.send(BoardEvent::UserConnected { board_id: self.id, user_id: msg.user.id })
+            self.space_callback
+                .send(BoardEvent::UserConnected {
+                    board_id: self.id,
+                    user_id: msg.user.id,
+                })
                 .await
                 .expect("Can't publish user connect event");
-            }
-        );
+        });
 
         self.register(msg.user.clone(), msg.addr);
         self.broadcast(Update {
@@ -91,11 +93,14 @@ impl Handler<Disconnect> for Space {
         );
 
         _ = Box::pin(async {
-            self.space_callback.send(BoardEvent::UserLeft { board_id: self.id, user_id: msg.user_id })
+            self.space_callback
+                .send(BoardEvent::UserLeft {
+                    board_id: self.id,
+                    user_id: msg.user_id,
+                })
                 .await
                 .expect("Can't publish user connect event");
-            }
-        );
+        });
 
         self.unregister(msg.user_id);
         self.broadcast(Update {

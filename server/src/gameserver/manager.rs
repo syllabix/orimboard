@@ -1,5 +1,7 @@
-use agones::Sdk;
 use tokio::{sync::mpsc, task};
+
+#[cfg(feature = "agones_sdk")]
+use agones::Sdk;
 
 #[cfg(feature = "agones_sdk")]
 use super::healthcheck::HealthChecker;
@@ -14,7 +16,7 @@ pub enum Error {
     #[error("failed to mark the server as ready: `{0}`")]
     ReadinessIssue(String),
     #[error("failed to cleanly shutdown the server: `{0}`")]
-    ShutdownFailure(String)
+    ShutdownFailure(String),
 }
 
 #[cfg(feature = "agones_sdk")]
@@ -63,10 +65,14 @@ impl Manager {
                     match action {
                         BoardEvent::Ready => Self::ready(&mut my_sdk).await,
                         BoardEvent::Shutdown => Self::shutdown(&mut my_sdk, 0).await,
-                        BoardEvent::BoardLoaded{ id } => Self::allocate(&mut my_sdk, id).await,
+                        BoardEvent::BoardLoaded { id } => Self::allocate(&mut my_sdk, id).await,
                         BoardEvent::BoardClosed { id } => Self::shutdown(&mut my_sdk, id).await,
-                        BoardEvent::UserConnected { board_id, user_id } => Self::user_connected(&mut my_sdk, board_id, user_id).await,
-                        BoardEvent::UserLeft { board_id, user_id } => Self::user_disconnected(&mut my_sdk, board_id, user_id).await,
+                        BoardEvent::UserConnected { board_id, user_id } => {
+                            Self::user_connected(&mut my_sdk, board_id, user_id).await
+                        }
+                        BoardEvent::UserLeft { board_id, user_id } => {
+                            Self::user_disconnected(&mut my_sdk, board_id, user_id).await
+                        }
                     }
                 }
             }
@@ -76,41 +82,43 @@ impl Manager {
     }
 
     async fn ready(sdk: &mut Sdk) {
-        sdk.ready()
-            .await
-            .expect("Can't send ready signal.")
-        }
+        sdk.ready().await.expect("Can't send ready signal.")
+    }
 
     async fn shutdown(sdk: &mut Sdk, space_id: usize) {
         log::info!("Space id={} disconnected. Shutdown server", space_id);
-        sdk.shutdown()
-            .await
-            .expect("Can't shutdown server.")
+        sdk.shutdown().await.expect("Can't shutdown server.")
     }
 
     async fn allocate(sdk: &mut Sdk, space_id: usize) {
         log::debug!("Allocating for space id={:?}", space_id);
         sdk.allocate()
             .await
-            .and({ 
+            .and({
                 sdk.set_label("orimboard-space-id", space_id.to_string())
-                .await
-             })
+                    .await
+            })
             .expect(format!("Can't reserve space {}", space_id).as_str())
     }
 
     async fn user_connected(sdk: &mut Sdk, board_id: usize, user_id: usize) {
         log::info!("User id={} connected to board id={}", user_id, board_id);
         let mut alpha_sdk = sdk.alpha().clone();
-        alpha_sdk.player_connect(user_id.to_string())
+        alpha_sdk
+            .player_connect(user_id.to_string())
             .await
             .expect("User connection not registered");
     }
 
     async fn user_disconnected(sdk: &mut Sdk, board_id: usize, user_id: usize) {
-        log::info!("User id={} disconnected from board id={}", user_id, board_id);
+        log::info!(
+            "User id={} disconnected from board id={}",
+            user_id,
+            board_id
+        );
         let mut alpha_sdk = sdk.alpha().clone();
-        alpha_sdk.player_disconnect(user_id.to_string())
+        alpha_sdk
+            .player_disconnect(user_id.to_string())
             .await
             .expect("User connection not registered");
     }
@@ -121,19 +129,30 @@ impl Manager {
 }
 
 #[cfg(not(feature = "agones_sdk"))]
-pub struct Manager();
+pub struct Manager {
+    board_events: mpsc::Sender<BoardEvent>,
+}
 
 #[cfg(not(feature = "agones_sdk"))]
 impl Manager {
     pub async fn setup() -> Result<Manager, Error> {
-        Ok(Manager {})
+        let board_events = Manager::new_spaces_channel();
+        Ok(Manager { board_events })
     }
 
-    pub async fn ready(&mut self) -> Result<(), Error> {
-        Ok(())
+    fn new_spaces_channel() -> mpsc::Sender<BoardEvent> {
+        let (tx, mut rx) = mpsc::channel::<BoardEvent>(10);
+        task::spawn(async move {
+            loop {
+                if let Some(event) = rx.recv().await {
+                    log::info!("board event received: {:?}", event)
+                }
+            }
+        });
+        tx
     }
 
-    pub async fn shutdown(&mut self) -> Result<(), Error> {
-        Ok(())
+    pub fn board_events(&self) -> mpsc::Sender<BoardEvent> {
+        self.board_events.clone()
     }
 }
