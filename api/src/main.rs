@@ -13,15 +13,16 @@ mod user;
 async fn main() -> std::io::Result<()> {
     std::env::set_var("RUST_BACKTRACE", "1");
     std::env::set_var("RUST_LOG", "debug");
-    let log_level = std::env::var("RUST_LOG").unwrap_or("debug".to_string());
+    let log_level = std::env::var("RUST_LOG").unwrap_or_else(|_| "debug".to_string());
     std::env::set_var("RUST_LOG", log_level);
 
-    let host = std::env::var("HOST").unwrap_or("127.0.0.1".to_string());
+    let host = std::env::var("HOST").unwrap_or_else(|_| "127.0.0.1".to_string());
     let port = std::env::var("PORT")
         .map(|ps| ps.parse::<u16>().expect("Invalid PORT specified"))
         .unwrap_or(8081);
 
-    let allocator_url = std::env::var("AGONES_ALLOCATOR_URL").unwrap_or("http://agones-allocator.agones-sys.svc.cluster.local".to_string());
+    let allocator_url =
+        std::env::var("AGONES_ALLOCATOR_URL").unwrap_or_else(|_| "127.0.0.1".to_string());
 
     env_logger::init();
 
@@ -59,7 +60,7 @@ async fn main() -> std::io::Result<()> {
 
 fn cors_config() -> Cors {
     let cors_allow_origin =
-        std::env::var("CORS_ALLOW_ORIGIN").unwrap_or("http://localhost:3000".to_string());
+        std::env::var("CORS_ALLOW_ORIGIN").unwrap_or_else(|_| "http://localhost:3000".to_string());
 
     Cors::default()
         .allowed_origin(cors_allow_origin.as_str())

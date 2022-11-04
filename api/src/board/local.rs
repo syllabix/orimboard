@@ -1,6 +1,5 @@
 use super::payload::GameServer;
 
-
 #[derive(Debug, Clone)]
 pub struct Client();
 
