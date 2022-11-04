@@ -76,11 +76,10 @@ pub async fn connect(
 ) -> Result<HttpResponse, Error> {
     let user = get_user(&req, users)?;
     let space_id = get_space_id(&req)?;
-    let space = spaces.get_or_create(space_id)
-        .await;
+    let space = spaces.get_or_create(space_id).await;
 
     ws::start(
-        User::new(user.id.into(), user.name, user.color, space.clone()),
+        User::new(user.id.into(), user.name, user.color, space),
         &req,
         stream,
     )

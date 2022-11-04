@@ -28,10 +28,7 @@ impl Registry {
     }
 
     pub fn get(&self, id: u16) -> Option<Participant> {
-        match self.users.get(&id) {
-            Some(entry) => Some(entry.value().to_owned()),
-            None => None,
-        }
+        self.users.get(&id).map(|entry| entry.value().to_owned())
     }
 
     pub fn get_all(&self) -> Vec<Participant> {

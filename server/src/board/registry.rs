@@ -12,14 +12,14 @@ use super::{
 #[derive(Debug)]
 pub struct Registry {
     spaces: DashMap<space::ID, Addr<Space>>,
-    space_callback: Sender<BoardEvent>
+    space_callback: Sender<BoardEvent>,
 }
 
 impl Registry {
     pub fn new(space_callback: Sender<BoardEvent>) -> Registry {
         Registry {
             spaces: Default::default(),
-            space_callback
+            space_callback,
         }
     }
 
@@ -29,11 +29,13 @@ impl Registry {
         }
 
         let space = Space::new(id, self.space_callback.clone()).start();
-        let _ = self.space_callback.send(BoardEvent::BoardLoaded { id })
+        let _ = self
+            .space_callback
+            .send(BoardEvent::BoardLoaded { id })
             .await;
 
         self.spaces.insert(id, space.clone());
-        return space;
+        space
     }
 
     pub async fn get_space_info(&self, space_id: space::ID) -> Option<SpaceInfo> {

@@ -82,7 +82,7 @@ impl Service {
     }
 
     fn chat_history(&self) -> Vec<ChatMessage> {
-        self.chat.iter().cloned().collect()
+        self.chat.to_vec()
     }
 
     fn drawings(&self) -> Vec<DrawnLine> {

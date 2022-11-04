@@ -17,38 +17,38 @@ use crate::gameserver::BoardEvent;
 async fn main() -> std::io::Result<()> {
     std::env::set_var("RUST_BACKTRACE", "1");
 
-    let log_level = std::env::var("RUST_LOG").unwrap_or("debug".to_string());
+    let log_level = std::env::var("RUST_LOG").unwrap_or_else(|_| "debug".to_string());
     std::env::set_var("RUST_LOG", log_level);
 
-    let host = std::env::var("HOST").unwrap_or("127.0.0.1".to_string());
+    let host = std::env::var("HOST").unwrap_or_else(|_| "127.0.0.1".to_string());
     let port = std::env::var("PORT")
         .map(|ps| ps.parse::<u16>().expect("Invalid PORT specified"))
         .unwrap_or(8080);
 
     env_logger::init();
 
-    let manager = gameserver::Manager::setup().await
-        .map_err(|e| {
-            Error::new(
-                ErrorKind::Other,
-                format!("failed to set up game server manager {}", e),
-            )
-        })?;
+    let manager = gameserver::Manager::setup().await.map_err(|e| {
+        Error::new(
+            ErrorKind::Other,
+            format!("failed to set up game server manager {}", e),
+        )
+    })?;
 
     log::info!("starting board server at {}:{}...", &host, &port);
     let user_registry = web::Data::new(user::Registry::new());
     let board_server = web::Data::new(Registry::new(manager.board_events()));
 
-    manager.board_events()
+    manager
+        .board_events()
         .send(BoardEvent::Ready)
         .await
         .unwrap();
-    
+
     HttpServer::new(move || {
         let logger = Logger::default();
 
         App::new()
-  //          .wrap(cors_config())
+            .wrap(cors_config())
             .wrap(logger)
             .route("/healthz", web::get().to(handler::health_check))
             .service(
@@ -71,7 +71,8 @@ async fn main() -> std::io::Result<()> {
     .await
     .map_err(|e| Error::new(ErrorKind::Other, e))?;
 
-    manager.board_events()
+    manager
+        .board_events()
         .send(BoardEvent::Shutdown)
         .await
         .unwrap();
@@ -81,7 +82,7 @@ async fn main() -> std::io::Result<()> {
 
 fn cors_config() -> Cors {
     let cors_allow_origin =
-        std::env::var("CORS_ALLOW_ORIGIN").unwrap_or("http://localhost:3000".to_string());
+        std::env::var("CORS_ALLOW_ORIGIN").unwrap_or_else(|_| "http://localhost:3000".to_string());
 
     Cors::default()
         .allowed_origin(cors_allow_origin.as_str())
