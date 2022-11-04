@@ -80,4 +80,3 @@ Skaffold will build the docker images using the `docker` host on `minikube`, and
 
 1. support rotation transforms for shapes
 2. setup basic user and auth system
-3. run on agones/k8s
