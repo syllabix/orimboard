@@ -19,13 +19,15 @@ async fn main() -> std::io::Result<()> {
     let host = std::env::var("HOST").unwrap_or("127.0.0.1".to_string());
     let port = std::env::var("PORT")
         .map(|ps| ps.parse::<u16>().expect("Invalid PORT specified"))
-        .unwrap_or(8080);
+        .unwrap_or(8081);
+
+    let allocator_url = std::env::var("AGONES_ALLOCATOR_URL").unwrap_or("http://agones-allocator.agones-sys.svc.cluster.local".to_string());
 
     env_logger::init();
 
     log::info!("starting user service server at {}:{}...", &host, &port);
     let user_registry = web::Data::new(user::Registry::new());
-    let board_client = web::Data::new(board::Client::new());
+    let board_client = web::Data::new(board::Client::new(allocator_url));
 
     HttpServer::new(move || {
         let logger = Logger::default();

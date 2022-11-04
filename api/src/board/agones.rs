@@ -2,6 +2,8 @@ use std::collections::HashMap;
 
 use serde::{Deserialize, Serialize};
 
+use super::payload::GameServer;
+
 #[derive(Serialize, Deserialize, Debug)]
 pub enum GameServerState {
     Ready = 0,
@@ -39,14 +41,6 @@ pub struct Port {
     pub port: i64,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
-pub struct GameServer {
-    #[serde(rename = "gameServerName")]
-    pub game_server_name: String,
-    pub port: i64,
-    pub address: String,
-}
-
 impl From<AllocateResponse> for GameServer {
     fn from(res: AllocateResponse) -> Self {
         let port = res
@@ -65,12 +59,14 @@ impl From<AllocateResponse> for GameServer {
 
 #[derive(Debug, Clone)]
 pub struct Client {
+    url: String,
     http: reqwest::Client,
 }
 
 impl Client {
-    pub fn new() -> Client {
+    pub fn new(base_url: String) -> Client {
         Client {
+            url: format!("{}/gameserverallocation", base_url),
             http: reqwest::Client::new(),
         }
     }
@@ -79,7 +75,6 @@ impl Client {
         &self,
         board_id: usize,
     ) -> Result<GameServer, Box<dyn std::error::Error>> {
-        let url = "http://agones-allocator.agones-sys.svc.cluster.local/gameserverallocation";
         let mut board_id_label = HashMap::new();
         board_id_label.insert(
             format!("agones.dev/sdk-gs-{}", board_id),
@@ -101,7 +96,7 @@ impl Client {
 
         let result: AllocateResponse = self
             .http
-            .post(url)
+            .post(&self.url)
             .json(&req_body)
             .send()
             .await?

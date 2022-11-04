@@ -4,7 +4,15 @@
 //! utilities to allocate and discover boards, as well as retrieve data
 //!
 
-mod client;
-mod components;
+mod component;
+mod payload;
 
-pub use self::client::Client;
+#[cfg(feature = "agones_sdk")]
+mod agones;
+#[cfg(feature = "agones_sdk")]
+pub use self::agones::Client;
+
+#[cfg(not(feature = "agones_sdk"))]
+mod local;
+#[cfg(not(feature = "agones_sdk"))]
+pub use self::local::Client;
