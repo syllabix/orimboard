@@ -27,6 +27,10 @@ run.client:
 	cd client && npm install
 	cd client && npm run dev
 
-## Start up the orim board server backend
+## Start up the orim api server
+run.api:
+	cd api && cargo run
+
+## Start up the orim board server
 run.server:
 	cd server && cargo run

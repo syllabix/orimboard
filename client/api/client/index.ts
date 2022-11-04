@@ -4,14 +4,14 @@ import axios from "axios";
 import getConfig from "next/config";
 
 class APIError {
-  message: string
+  message: string;
 
   constructor(message: string) {
     this.message = message;
   }
 }
 
-class APIClient {
+export class APIClient {
   private http: Http;
 
   constructor(http: Http) {
@@ -25,7 +25,7 @@ class APIClient {
       if (axios.isAxiosError(err)) {
         throw new APIError(err.message);
       }
-      throw new APIError("unable to reach the internet")
+      throw new APIError("unable to reach the internet");
     }
   };
 
@@ -36,14 +36,15 @@ class APIClient {
       if (axios.isAxiosError(err)) {
         throw new APIError(err.message);
       }
-      throw new APIError("unable to reach the internet")
+      throw new APIError("unable to reach the internet");
     }
   };
 }
 
 const { publicRuntimeConfig } = getConfig();
-const Client = new APIClient(new Http(provider(
-  publicRuntimeConfig.API_SERVER_PATH
-)));
+let apiUrl = publicRuntimeConfig.API_SERVER_PATH || process.env.API_SERVER_PATH
+const Client = new APIClient(
+  new Http(provider(apiUrl))
+);
 
 export default Client;

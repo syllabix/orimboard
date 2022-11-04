@@ -1,50 +1,34 @@
-mod board;
-mod gameserver;
-mod handler;
-mod user;
+use actix_cors::Cors;
 
 use std::io::{Error, ErrorKind};
-
-use actix_cors::Cors;
 
 use actix_web::middleware::Logger;
 use actix_web::{web, App, HttpServer};
 
-use crate::board::Registry;
-use crate::gameserver::BoardEvent;
+mod board;
+mod handler;
+mod user;
 
 #[tokio::main]
 async fn main() -> std::io::Result<()> {
     std::env::set_var("RUST_BACKTRACE", "1");
-
+    std::env::set_var("RUST_LOG", "debug");
     let log_level = std::env::var("RUST_LOG").unwrap_or_else(|_| "debug".to_string());
     std::env::set_var("RUST_LOG", log_level);
 
     let host = std::env::var("HOST").unwrap_or_else(|_| "127.0.0.1".to_string());
     let port = std::env::var("PORT")
         .map(|ps| ps.parse::<u16>().expect("Invalid PORT specified"))
-        .unwrap_or(8080);
+        .unwrap_or(8081);
 
-    let api_base_url = std::env::var("API_BASE_URL").unwrap_or_else(|_| "http://127.0.0.1:8081".to_string());
+    let allocator_url =
+        std::env::var("AGONES_ALLOCATOR_URL").unwrap_or_else(|_| "127.0.0.1".to_string());
 
     env_logger::init();
 
-    let manager = gameserver::Manager::setup().await.map_err(|e| {
-        Error::new(
-            ErrorKind::Other,
-            format!("failed to set up game server manager {}", e),
-        )
-    })?;
-
-    log::info!("starting board server at {}:{}...", &host, &port);
-    let user_client = web::Data::new(user::Client::new(api_base_url));
-    let board_server = web::Data::new(Registry::new(manager.board_events()));
-
-    manager
-        .board_events()
-        .send(BoardEvent::Ready)
-        .await
-        .unwrap();
+    log::info!("starting user service server at {}:{}...", &host, &port);
+    let user_registry = web::Data::new(user::Registry::new());
+    let board_client = web::Data::new(board::Client::new(allocator_url));
 
     HttpServer::new(move || {
         let logger = Logger::default();
@@ -54,23 +38,22 @@ async fn main() -> std::io::Result<()> {
             .wrap(logger)
             .route("/healthz", web::get().to(handler::health_check))
             .service(
+                web::scope("/v1/user")
+                    .app_data(user_registry.clone())
+                    .route("", web::put().to(handler::user::create))
+                    .route("", web::get().to(handler::user::get_all))
+                    .route("/{id}", web::get().to(handler::user::get)),
+            )
+            .service(
                 web::scope("/v1/board")
-                    .app_data(board_server.clone())
-                    .app_data(user_client.clone())
-                    .route("/{id}/connect", web::get().to(handler::board::connect))
-                    .route("/{id}", web::get().to(handler::board::get_state)),
+                    .app_data(board_client.clone())
+                    .route("/{id}", web::get().to(handler::board::allocate)),
             )
     })
     .bind((host, port))?
     .run()
     .await
     .map_err(|e| Error::new(ErrorKind::Other, e))?;
-
-    manager
-        .board_events()
-        .send(BoardEvent::Shutdown)
-        .await
-        .unwrap();
 
     Ok(())
 }

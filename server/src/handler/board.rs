@@ -5,6 +5,7 @@ use actix_web::{
 };
 use actix_web_actors::ws;
 use derive_more::{Display, Error};
+use serde::Deserialize;
 
 use crate::{
     board::{self, space, user::User, Registry},
@@ -35,24 +36,21 @@ impl ResponseError for ServerError {
     }
 }
 
-fn get_user(
-    req: &HttpRequest,
-    registry: web::Data<user::Registry>,
-) -> Result<user::Participant, Error> {
-    let user_id: u16 = match req.cookie("token") {
-        Some(cookie) => match cookie.value().trim().parse() {
-            Ok(user_id) => user_id,
-            Err(e) => {
-                log::error!("{}", e);
-                return Err(Error::from(ServerError::UserNotAuthorized));
-            }
-        },
-        None => return Err(Error::from(ServerError::UserNotAuthorized)),
-    };
+#[derive(Deserialize)]
+pub struct Token {
+    tk: u16,
+}
 
-    match registry.get(user_id) {
-        Some(user) => Ok(user),
-        None => Err(Error::from(ServerError::UserNotAuthorized)),
+async fn get_user(
+    user_id: u16,
+    user_client: web::Data<user::Client>,
+) -> Result<user::Participant, Error> {
+    match user_client.get(user_id).await {
+        Ok(participant) => Ok(participant),
+        Err(e) => {
+            log::error!("failed to get user from user service: {}", e);
+            Err(Error::from(ServerError::UserNotAuthorized))
+        }
     }
 }
 
@@ -71,10 +69,11 @@ fn get_space_id(req: &HttpRequest) -> Result<space::ID, Error> {
 pub async fn connect(
     req: HttpRequest,
     stream: web::Payload,
+    token: web::Query<Token>,
     spaces: web::Data<board::Registry>,
-    users: web::Data<user::Registry>,
+    user_client: web::Data<user::Client>,
 ) -> Result<HttpResponse, Error> {
-    let user = get_user(&req, users)?;
+    let user = get_user(token.tk, user_client).await?;
     let space_id = get_space_id(&req)?;
     let space = spaces.get_or_create(space_id).await;
 

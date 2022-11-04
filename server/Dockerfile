@@ -19,5 +19,6 @@ COPY --from=builder /build/target/release/orim-board-server /app/
 
 ENV HOST "0.0.0.0"
 ENV CORS_ALLOW_ORIGIN "http://orimboard.io"
+ENV API_BASE_URL "http://api.api.svc.cluster.local/v1/user"
 
 CMD ["./orim-board-server"]

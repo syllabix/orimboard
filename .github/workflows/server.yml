@@ -19,6 +19,12 @@ jobs:
     - name: Check Server
       working-directory: ./server
       run: cargo check --verbose
-    - name: Run tests
+    - name: Run Server Tests
       working-directory: ./server
+      run: cargo test --verbose
+    - name: Check API Server
+      working-directory: ./api
+      run: cargo check --verbose
+    - name: Run API Tests
+      working-directory: ./api
       run: cargo test --verbose
