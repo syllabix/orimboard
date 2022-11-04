@@ -1,21 +1,31 @@
 // Shameless plug from https://k6.io/docs/examples/websockets/
 import { randomString, randomIntBetween } from 'https://jslib.k6.io/k6-utils/1.1.0/index.js';
 import ws from 'k6/ws';
+import http from 'k6/http';
 import { check, sleep } from 'k6';
 
 const sessionDuration = 30000; // user session 30s
 
 export const options = {
-  vus: 2,
-  iterations: 3,
+  // TODO: Add more virtual users
+  vus: 1,
+  iterations: 1,
   summaryTrendStats: ["med", "min", "max", "avg", "p(90)", "p(95)", "p(99)", "p(99.9)", "p(100)"],
 };
 
-// 1KB data
+//FIXME - Need to write an action that can be deserialized properly into a valid board message; join is a simple one
+// TODO - replace user id every time server is restarted
 const payload = " \n" +
-    "{type: \"chat\", payload: {text: \"ff\", sentAt: \"2022-11-04T15:11:55.536Z\",…}";
+    "action\n" +
+    ": \n" +
+    "{type: \"join\", payload: {id: 15345, name: \"333\", color: \"#e86361\"}}";
 export default function () {
-  //TODO: Change URL	
+
+  const jar = http.cookieJar();
+  // TODO: Will be nice to get each virtual user (VU) their own user ID
+  // TODO: Change URL
+  jar.set("http://localhost:8080/v1/board/90210/connect", "token", "15345");
+
   const url = 'ws://localhost:8080/v1/board/90210/connect';
   const params = { tags: { my_tag: 'system-team-test session' } };
 
