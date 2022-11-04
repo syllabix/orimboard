@@ -18,13 +18,13 @@ export const options = {
 const payload = " \n" +
     "action\n" +
     ": \n" +
-    "{type: \"join\", payload: {id: 15345, name: \"333\", color: \"#e86361\"}}";
+    "{\"type\": \"join\", payload: {id: 46664, name: \"333\", color: \"#e86361\"}}";
 export default function () {
 
   const jar = http.cookieJar();
   // TODO: Will be nice to get each virtual user (VU) their own user ID
   // TODO: Change URL
-  jar.set("http://localhost:8080/v1/board/90210/connect", "token", "15345");
+  jar.set("http://localhost:8080/v1/board/90210/connect", "token", "46664");
 
   const url = 'ws://localhost:8080/v1/board/90210/connect';
   const params = { tags: { my_tag: 'system-team-test session' } };
