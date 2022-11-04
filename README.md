@@ -21,7 +21,10 @@ When running in k8s - the board servers are treated as game servers, and are man
 2. [Install Node.js](https://nodejs.org/en/download/current/) (>= v18.9.0)
 
 ```
-## start up the server
+## start up the api server
+make run.api
+
+## start up the board server
 make run.server
 
 ## start up the client
