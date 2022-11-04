@@ -80,7 +80,9 @@ const reducer = (state: BoardState, action: BoardAction): BoardState => {
                         )
                     }
                 default:
-                    let lastLine = state.lines[state.lines.length - 1];
+                    let lastLine = state.lines[state.lines.length - 1] || {
+                        points: []
+                    };
                     lastLine.points = lastLine.points.concat([action.payload.point.x, action.payload.point.y]);
                     state.lines.splice(state.lines.length - 1, 1, lastLine);
                     return {
