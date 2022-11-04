@@ -2,7 +2,7 @@ FROM rust:1.64-slim as builder
 
 WORKDIR /build
 RUN cargo init --bin --name orim-api
-COPY Cargo.lock Cargo.toml /build/
+COPY Cargo.toml /build/
 
 RUN cargo build --release
 RUN rm src/*.rs && rm target/release/deps/orim_api*

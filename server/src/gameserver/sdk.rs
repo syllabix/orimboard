@@ -114,6 +114,9 @@ impl Manager {
     ) {
         log::info!("Space id={} loaded", space_id);
         boards_map.insert(space_id, HashSet::new());
+        sdk.set_label(format!("gs-{}", space_id), "space-id")
+            .await
+            .expect(format!("Can't reserve space {}", space_id).as_str());
         if boards_map.len() == max_board_count {
             sdk.allocate() // set allocated so that agones knows not to schedule this board.
                 .await

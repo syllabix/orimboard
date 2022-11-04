@@ -5,6 +5,5 @@
 
 pub mod board;
 mod health_check;
-pub mod user;
 
 pub use self::health_check::health_check;

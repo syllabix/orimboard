@@ -1,5 +1,3 @@
-use std::fmt::format;
-
 use super::Participant;
 
 #[derive(Debug, Clone)]
