@@ -25,6 +25,8 @@ async fn main() -> std::io::Result<()> {
         .map(|ps| ps.parse::<u16>().expect("Invalid PORT specified"))
         .unwrap_or(8080);
 
+    let api_base_url = std::env::var("API_BASE_URL").unwrap_or_else(|_| "http://127.0.0.1:8081".to_string());
+
     env_logger::init();
 
     let manager = gameserver::Manager::setup().await.map_err(|e| {
@@ -35,7 +37,7 @@ async fn main() -> std::io::Result<()> {
     })?;
 
     log::info!("starting board server at {}:{}...", &host, &port);
-    let user_client = web::Data::new(user::Client::new());
+    let user_client = web::Data::new(user::Client::new(api_base_url));
     let board_server = web::Data::new(Registry::new(manager.board_events()));
 
     manager

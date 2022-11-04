@@ -5,7 +5,7 @@ use super::payload::GameServer;
 pub struct Client();
 
 impl Client {
-    pub fn new(base_url: String) -> Client {
+    pub fn new(_base_url: String) -> Client {
         Client {}
     }
 
@@ -16,7 +16,7 @@ impl Client {
         Ok(GameServer {
             game_server_name: String::from("local-orim-board-server"),
             port: 8080,
-            address: String::from("http://127.0.0.1"),
+            address: String::from("127.0.0.1"),
         })
     }
 }

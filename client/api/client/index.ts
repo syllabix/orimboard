@@ -42,8 +42,9 @@ export class APIClient {
 }
 
 const { publicRuntimeConfig } = getConfig();
+let apiUrl = publicRuntimeConfig.API_SERVER_PATH || process.env.API_SERVER_PATH
 const Client = new APIClient(
-  new Http(provider(publicRuntimeConfig.API_SERVER_PATH))
+  new Http(provider(apiUrl))
 );
 
 export default Client;

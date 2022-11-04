@@ -34,7 +34,7 @@ export type WidgetKind = "sticky" | "rect" | "circle" | "star";
 export const useBoardStateLoader = (id: string, server: GameServer) => {
   const serverURL = `http://${server.address}:${server.port}/v1/board/${id}`;
   const http = useMemo(() => {
-    return new APIClient(new Http(provider("")));
+    return new APIClient(new Http(provider(serverURL)));
   }, [serverURL]);
   const { data, error } = useSWR(
     `http://${server.address}:${server.port}/v1/board/${id}`,
