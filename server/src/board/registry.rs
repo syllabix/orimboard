@@ -29,10 +29,11 @@ impl Registry {
         }
 
         let space = Space::new(id, self.space_callback.clone()).start();
-        let _ = self
-            .space_callback
+
+        self.space_callback
             .send(BoardEvent::BoardLoaded { id })
-            .await;
+            .await
+            .expect("Can't publish board load event");
 
         self.spaces.insert(id, space.clone());
         space

@@ -2,7 +2,7 @@ FROM rust:1.64-slim as builder
 
 WORKDIR /build
 RUN cargo init --bin --name orim-board-server
-COPY Cargo.lock Cargo.toml /build/
+COPY Cargo.toml /build/
 
 RUN cargo build --release --features agones_sdk
 RUN rm src/*.rs && rm target/release/deps/orim_board_server*
@@ -20,6 +20,8 @@ RUN apt install curl -y
 WORKDIR /app
 COPY --from=builder /build/target/release/orim-board-server /app/
 
+ENV BOARD_CAPACITY "1"
+ENV USER_CAPACITY "1000"
 ENV PORT "8888"
 ENV HOST "0.0.0.0"
 ENV RUST_LOG "info"
