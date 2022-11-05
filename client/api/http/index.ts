@@ -1,6 +1,5 @@
 import { AxiosInstance, AxiosRequestConfig, AxiosResponse } from "axios";
 
-
 // This Http class wraps a provider (in this case an axios instance)
 // which should be used to make network requests in the app
 export class Http {

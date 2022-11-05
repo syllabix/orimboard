@@ -12,6 +12,6 @@ export const provider = (baseURL: string): AxiosInstance =>
       return status >= 200 && status < 300;
     },
     paramsSerializer: {
-      encode: (params: string) => qs.stringify(params)
-    }
+      encode: (params: string) => qs.stringify(params),
+    },
   });
