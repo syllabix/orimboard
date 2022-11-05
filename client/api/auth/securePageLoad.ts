@@ -24,7 +24,7 @@ export const securePageLoad = async (
       return {
         props: {
           signedUp: false,
-          user: null
+          user: null,
         },
       };
     }
@@ -34,7 +34,7 @@ export const securePageLoad = async (
       return {
         props: {
           signedUp: true,
-          user
+          user,
         },
       };
     } catch (e) {
@@ -42,7 +42,7 @@ export const securePageLoad = async (
       return {
         props: {
           signedUp: false,
-          user: null
+          user: null,
         },
       };
     }
@@ -51,7 +51,7 @@ export const securePageLoad = async (
   return {
     props: {
       signedUp: false,
-      user: null
+      user: null,
     },
   };
 };
