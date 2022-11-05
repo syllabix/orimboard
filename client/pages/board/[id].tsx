@@ -38,7 +38,12 @@ const WhiteboardPage: NextPage<Props> = ({ id, user, server }) => {
       <BoardNav boardname="My Awesome Board" />
       {state.connected && (
         <>
-          <BoardStateLoader id={id} user={user} server={server} dispatch={dispatch} />
+          <BoardStateLoader
+            id={id}
+            user={user}
+            server={server}
+            dispatch={dispatch}
+          />
           <Pallette onUpdate={updater} />
           <Messenger
             user={state.activeUser}
