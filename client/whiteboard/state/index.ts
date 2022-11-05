@@ -9,7 +9,7 @@ export type UserState = { [id: string]: User };
 
 type BoardState = {
   loading: boolean;
-  connecting: boolean;
+  connected: boolean;
   mode: PalletteMode;
   activeUser: User;
   users: UserState;

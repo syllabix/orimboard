@@ -6,8 +6,6 @@ import { User } from "api/user";
 
 type Updater = (update: BoardAction) => void;
 
-const { publicRuntimeConfig } = getConfig();
-
 export const useSocket = (
   id: string,
   server: GameServer,

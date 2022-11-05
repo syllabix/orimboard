@@ -10,8 +10,9 @@ import { useBoardStateLoader } from "api/board/loadBoardState";
 import { securePageLoad } from "api/auth/securePageLoad";
 import { useEffect } from "react";
 import { User } from "api/user";
-import { GameServer, useAllocator } from "api/board/useAllocator";
+import { GameServer } from "api/board/useAllocator";
 import Client from "api/client";
+import { BoardStateLoader } from "whiteboard/state/loader";
 
 type Props = {
   id: string;
@@ -22,20 +23,6 @@ type Props = {
 const WhiteboardPage: NextPage<Props> = ({ id, user, server }) => {
   const [state, dispatch] = useBoardState();
   const updater = useSocket(id, server, user, dispatch);
-  const { data, isLoading } = useBoardStateLoader(id, server);
-
-  useEffect(() => {
-    dispatch({
-      type: "setup",
-      payload: {
-        activeUser: user,
-        widgets: data.widgets,
-        chat: data.chat,
-        lines: data.lines,
-        users: data.users,
-      },
-    });
-  }, [data]);
 
   return (
     <>
@@ -49,14 +36,19 @@ const WhiteboardPage: NextPage<Props> = ({ id, user, server }) => {
         />
       </Head>
       <BoardNav boardname="My Awesome Board" />
-      <Pallette onUpdate={updater} />
-      <Messenger
-        user={state.activeUser}
-        users={state.users}
-        messages={state.chat}
-        send={updater}
-      />
-      <Whiteboard state={state} dispatch={updater} />
+      {state.connected && (
+        <>
+          <BoardStateLoader id={id} user={user} server={server} dispatch={dispatch} />
+          <Pallette onUpdate={updater} />
+          <Messenger
+            user={state.activeUser}
+            users={state.users}
+            messages={state.chat}
+            send={updater}
+          />
+          <Whiteboard state={state} dispatch={updater} />
+        </>
+      )}
     </>
   );
 };

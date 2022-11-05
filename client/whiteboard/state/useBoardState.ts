@@ -7,7 +7,7 @@ import { BoardAction } from "./action";
 
 const initialState: BoardState = {
   loading: false,
-  connecting: false,
+  connected: false,
   mode: "select",
   activeUser: {} as User,
   chat: [],
@@ -21,7 +21,7 @@ const reducer = (state: BoardState, action: BoardAction): BoardState => {
     case "connect":
       return {
         ...state,
-        ...{ connecting: action.payload },
+        ...{ connected: action.payload },
       };
     case "chat":
       return {
