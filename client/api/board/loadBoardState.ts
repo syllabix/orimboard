@@ -38,7 +38,7 @@ export const useBoardStateLoader = (id: string, server: GameServer) => {
   }, [serverURL]);
   const { data, error } = useSWR(
     `http://${server.address}:${server.port}/v1/board/${id}`,
-    (url) => http.get<BoardState>(url),
+    (url) => http.get<BoardState>(url)
   );
 
   return {
