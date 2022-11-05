@@ -21,6 +21,7 @@ deploy:
         repo: https://agones.dev/chart/stable
         valuesFiles:
           - helm/values.yaml
+        version: 1.27.0
 requires:
   - configs:
       - "pre-agones"

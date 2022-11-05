@@ -9,7 +9,7 @@ spec:
   ports:
   - port: 80
     protocol: TCP
-    targetPort: 8080
+    targetPort: 8081
   selector:
     app: api
-  type: NodePort
+  type: ClusterIP
