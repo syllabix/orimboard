@@ -11,8 +11,10 @@ import { securePageLoad } from "api/auth/securePageLoad";
 import { useEffect } from "react";
 import { User } from "api/user";
 import { GameServer } from "api/board/useAllocator";
-import Client from "api/client";
+import Client, { APIClient } from "api/client";
 import { BoardStateLoader } from "whiteboard/state/loader";
+import { Http } from "api/http";
+import { provider } from "api/http/provider";
 
 type Props = {
   id: string;
@@ -61,7 +63,9 @@ const WhiteboardPage: NextPage<Props> = ({ id, user, server }) => {
 export async function getServerSideProps(ctx: NextPageContext) {
   const { id } = ctx.query as { id: string };
   let result = await securePageLoad(ctx);
-  let server = await Client.get<GameServer>(`/v1/board/${id}`);
+  let client = new APIClient(new Http(provider("http://api.api.svc.cluster.local")));
+  let server = await client.get<GameServer>(`/v1/board/${id}`);
+  console.info("got server details", server.data);
   return {
     props: {
       id,

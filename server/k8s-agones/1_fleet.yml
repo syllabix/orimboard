@@ -15,7 +15,7 @@ spec:
       template:
         spec:
           containers:
-            - image: orim/board-server:latest
+            - image: localhost:5001/board-server:latest
               name: board-server
               imagePullPolicy: IfNotPresent
               resources:

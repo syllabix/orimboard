@@ -21,9 +21,16 @@ struct GameServerSelector {
 
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
+struct MetaPatch {
+    labels: HashMap<String, String>,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(rename_all = "camelCase")]
 struct AllocateRequest {
     namespace: String,
     game_server_selectors: Vec<GameServerSelector>,
+    metadata: MetaPatch,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -82,6 +89,9 @@ impl Client {
         );
         let req_body = AllocateRequest {
             namespace: String::from("board"),
+            metadata: MetaPatch {
+                labels: board_id_label.clone(),
+            },
             game_server_selectors: vec![
                 GameServerSelector {
                     game_server_state: 1,

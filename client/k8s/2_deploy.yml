@@ -17,6 +17,6 @@ spec:
         app: site
     spec:
       containers:
-      - image: orim/client:latest
+      - image: localhost:5001/client:latest
         name: site
         imagePullPolicy: IfNotPresent

@@ -17,6 +17,6 @@ spec:
         app: api
     spec:
       containers:
-      - image: orim/api:latest
+      - image: localhost:5001/api:latest
         name: api
         imagePullPolicy: IfNotPresent

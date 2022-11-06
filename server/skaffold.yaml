@@ -10,13 +10,18 @@ build:
 deploy:
   kubectl:
     manifests:
-    - k8s/*.yml
+    - k8s-agones/*.yml
 profiles:
 - name: agones
   patches:
   - op: replace
     path: /build/artifacts/0/docker/dockerfile
     value: Dockerfile.agones
+  # - op: replace
+  #   path: /deploy/kubectl/manifests/0
+  #   value: k8s-agones/*.yml
+- name: kind
+  patches:
   - op: replace
-    path: /deploy/kubectl/manifests/0
-    value: k8s-agones/*.yml
+    path: /build/artifacts/0/image
+    value: localhost:5001/board-server

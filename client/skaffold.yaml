@@ -11,3 +11,9 @@ deploy:
   kubectl:
     manifests:
     - k8s/*.yml
+profiles:
+- name: kind
+  patches:
+  - op: replace
+    path: /build/artifacts/0/image
+    value: localhost:5001/client

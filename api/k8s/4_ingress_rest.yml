@@ -7,8 +7,7 @@ metadata:
   namespace: api
 spec:
   rules:
-    - host: orimboard.io
-      http:
+    - http:
         paths:
           - path: /api/(.+)
             pathType: Prefix
