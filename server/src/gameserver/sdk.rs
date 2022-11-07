@@ -12,32 +12,17 @@ pub struct Manager {
     _health_checker: HealthChecker,
 }
 
-type BoardByUsers = HashMap<usize, HashSet<usize>>;
+type UsersByBoard = HashMap<usize, HashSet<usize>>;
 
-impl Manager {
-    pub async fn setup() -> Result<Manager, Error> {
-        log::info!("connecting to agones sdk sidecar...");
-        let sdk = Sdk::new(None, None)
-            .await
-            .map_err(|e| Error::SetupFailure(format!("{}", e)))?;
+struct BoardEventHandler {
+    sdk: Sdk,
+    boards_map: UsersByBoard,
+    max_board_count: usize,
+    max_user_count: usize,
+}
 
-        let health_checker = HealthChecker::new(&sdk);
-        let board_events = Manager::new_spaces_channel(&sdk);
-        Ok(Manager {
-            _health_checker: health_checker,
-            board_events,
-        })
-    }
-
-    fn new_spaces_channel(sdk: &Sdk) -> mpsc::Sender<BoardEvent> {
-        let (tx, rx) = mpsc::channel::<BoardEvent>(10);
-
-        task::spawn(Self::board_event_handler(sdk.clone(), rx));
-
-        tx
-    }
-
-    async fn board_event_handler(mut sdk: Sdk, mut rx: mpsc::Receiver<BoardEvent>) {
+impl BoardEventHandler {
+    pub fn from_env(sdk: Sdk) -> BoardEventHandler {
         let max_board_count = std::env::var("BOARD_CAPACITY")
             .map(|c| c.parse::<usize>().expect("Invalid board capacity"))
             .unwrap_or(1);
@@ -46,93 +31,92 @@ impl Manager {
             .map(|c| c.parse::<usize>().expect("Invalid user capacity"))
             .unwrap_or(1000);
 
-        log::info!(
-            "Server capacity: max_boards={}, max_users={}",
+        BoardEventHandler {
+            sdk,
+            boards_map: HashMap::new(),
             max_board_count,
-            max_user_count
+            max_user_count,
+        }
+    }
+
+    async fn handle_events(mut self, mut rx: mpsc::Receiver<BoardEvent>) {
+        log::info!(
+            "Starting board event handler... Server capacity: max_boards={}, max_users={}",
+            self.max_board_count,
+            self.max_user_count
         );
-        let mut users_by_board: BoardByUsers = HashMap::new();
         loop {
             if let Some(action) = rx.recv().await {
                 match action {
-                    BoardEvent::Ready => Self::ready(&mut sdk).await,
-                    BoardEvent::Shutdown => Self::shutdown(&mut sdk).await,
-                    BoardEvent::BoardLoaded { id } => {
-                        Self::board_loaded(&mut sdk, id, &mut users_by_board, max_board_count).await
-                    }
-                    BoardEvent::BoardClosed { id } => {
-                        Self::board_closed(&mut sdk, id, &mut users_by_board).await
-                    }
+                    BoardEvent::Ready => self.ready().await,
+                    BoardEvent::Shutdown => self.shutdown().await,
+                    BoardEvent::BoardLoaded { id } => self.board_loaded(id).await,
+                    BoardEvent::BoardClosed { id } => self.board_closed(id).await,
                     BoardEvent::UserConnected { board_id, user_id } => {
-                        Self::user_connected(&mut sdk, board_id, user_id, &mut users_by_board).await
+                        self.user_connected(board_id, user_id).await
                     }
                     BoardEvent::UserLeft { board_id, user_id } => {
-                        Self::user_disconnected(&mut sdk, board_id, user_id, &mut users_by_board)
-                            .await
+                        self.user_disconnected(board_id, user_id).await
                     }
                 }
             }
         }
     }
 
-    async fn ready(sdk: &mut Sdk) {
-        sdk.ready()
+    async fn ready(&mut self) {
+        self.sdk
+            .ready()
             .await
             .and({
-                let mut alpha_sdk = sdk.alpha().clone();
+                let mut alpha_sdk = self.sdk.alpha().clone();
                 alpha_sdk.set_player_capacity(1000).await
             })
             .expect("Can't send ready signal.")
     }
 
-    async fn shutdown(sdk: &mut Sdk) {
+    async fn shutdown(&mut self) {
         log::info!("Shutdown server");
-        sdk.shutdown().await.expect("Can't shutdown server.")
+        self.sdk.shutdown().await.or::<()>(Result::Ok(())).unwrap()
     }
 
-    async fn board_closed(sdk: &mut Sdk, space_id: usize, boards_map: &mut BoardByUsers) {
+    async fn board_closed(&mut self, space_id: usize) {
         log::info!("Space id={} disconnected", space_id);
-        boards_map.remove(&space_id);
-        sdk.set_label(format!("board-{}", &space_id), "")
+        self.boards_map.remove(&space_id);
+        self.sdk
+            .set_label(format!("gs-{}", &space_id), "")
             .await
             .expect(format!("Can't set label board-{} -> ''", &space_id).as_str());
 
-        if boards_map.len() == 0 {
-            sdk.shutdown().await.expect("Can't shutdown server.")
+        if self.boards_map.len() == 0 {
+            self.sdk.shutdown().await.expect("Can't shutdown server.")
         } else {
-            sdk.ready() // set ready, we can accept more boards
+            self.sdk
+                .ready() // set ready, we can accept more boards
                 .await
                 .expect("Can't send ready signal.")
         }
     }
 
-    async fn board_loaded(
-        sdk: &mut Sdk,
-        space_id: usize,
-        boards_map: &mut BoardByUsers,
-        max_board_count: usize,
-    ) {
+    async fn board_loaded(&mut self, space_id: usize) {
         log::info!("Space id={} loaded", space_id);
-        boards_map.insert(space_id, HashSet::new());
-        sdk.set_label(format!("gs-{}", space_id), "space-id")
+        self.boards_map.insert(space_id, HashSet::new());
+        self.sdk
+            .set_label(format!("gs-{}", space_id), "space-id")
             .await
             .expect(format!("Can't reserve space {}", space_id).as_str());
-        if boards_map.len() == max_board_count {
-            sdk.allocate() // set allocated so that agones knows not to schedule this board.
+        if self.boards_map.len() == self.max_board_count {
+            self.sdk
+                .allocate() // set allocated so that agones knows not to schedule this board.
                 .await
                 .expect("Can't mark server as 'allocated'");
         }
     }
 
-    async fn user_connected(
-        sdk: &mut Sdk,
-        board_id: usize,
-        user_id: usize,
-        boards_map: &mut BoardByUsers,
-    ) {
+    async fn user_connected(&mut self, board_id: usize, user_id: usize) {
         log::info!("User id={} connected to board id={}", user_id, board_id);
-        let mut alpha_sdk = sdk.alpha().clone();
-        let _ = boards_map
+        let mut alpha_sdk = self.sdk.alpha().clone();
+        let _ = self
+            .boards_map
             .get_mut(&board_id)
             .expect("Board missing")
             .insert(user_id);
@@ -142,32 +126,49 @@ impl Manager {
             .expect("User connection not registered");
     }
 
-    async fn user_disconnected(
-        sdk: &mut Sdk,
-        board_id: usize,
-        user_id: usize,
-        boards_map: &mut BoardByUsers,
-    ) {
+    async fn user_disconnected(&mut self, board_id: usize, user_id: usize) {
         log::info!(
             "User id={} disconnected from board id={}",
             user_id,
             board_id
         );
-        let _ = boards_map
+        let _ = self
+            .boards_map
             .get_mut(&board_id)
             .expect("Board missing")
             .remove(&user_id);
 
-        let mut alpha_sdk = sdk.alpha().clone();
+        let mut alpha_sdk = self.sdk.alpha().clone();
         alpha_sdk
             .player_disconnect(user_id.to_string())
             .await
             .expect("User disconnection not registered");
 
-        let user_count = boards_map.get(&board_id).expect("Board missing").len();
+        let user_count = self.boards_map.get(&board_id).expect("Board missing").len();
         if user_count == 0 {
-            Self::board_closed(sdk, board_id, boards_map).await;
+            self.board_closed(board_id).await;
         }
+    }
+}
+
+impl Manager {
+    pub async fn setup() -> Result<Manager, Error> {
+        log::info!("connecting to agones sdk sidecar...");
+        let sdk = Sdk::new(None, None)
+            .await
+            .map_err(|e| Error::SetupFailure(format!("{}", e)))?;
+
+        let health_checker = HealthChecker::new(&sdk);
+
+        let handler = BoardEventHandler::from_env(sdk);
+        let (board_events, rx) = mpsc::channel::<BoardEvent>(10);
+
+        task::spawn(handler.handle_events(rx));
+
+        Ok(Manager {
+            _health_checker: health_checker,
+            board_events,
+        })
     }
 
     pub fn board_events(&self) -> mpsc::Sender<BoardEvent> {

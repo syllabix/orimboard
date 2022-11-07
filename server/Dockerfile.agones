@@ -20,8 +20,8 @@ RUN apt install curl -y
 WORKDIR /app
 COPY --from=builder /build/target/release/orim-board-server /app/
 
-ENV BOARD_CAPACITY "1"
-ENV USER_CAPACITY "1000"
+ENV BOARD_CAPACITY "2"
+ENV USER_CAPACITY "200"
 ENV PORT "8888"
 ENV HOST "0.0.0.0"
 ENV RUST_LOG "info"
