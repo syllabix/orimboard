@@ -99,7 +99,9 @@ impl BoardEventHandler {
 
     async fn board_loaded(&mut self, space_id: usize) {
         log::info!("Space id={} loaded", space_id);
-        self.boards_map.insert(space_id, HashSet::new());
+        self.boards_map
+            .entry(space_id)
+            .or_insert_with(|| HashSet::new());
         self.sdk
             .set_label(format!("gs-{}", space_id), "space-id")
             .await
