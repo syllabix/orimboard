@@ -103,7 +103,7 @@ impl Client {
                 },
             ],
         };
-
+        log::debug!("Allocate request: {:?}", &req_body);
         let result: AllocateResponse = self
             .http
             .post(&self.url)
