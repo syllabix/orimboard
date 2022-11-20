@@ -1,9 +1,12 @@
 use std::collections::HashMap;
 
-use crate::board::{space, component::{ChatMessage, DrawnLine, UserProfile, Widget}, user, message::{Action, SpaceInfo}};
+use crate::board::{
+    component::{ChatMessage, DrawnLine, UserProfile, Widget},
+    message::{Action, SpaceInfo},
+    space, user,
+};
 
 use super::backend::Backend;
-
 
 #[derive(Debug, Clone)]
 pub struct Service {
@@ -31,7 +34,9 @@ impl Service {
         match action {
             Action::Chat { mut payload } => {
                 payload.user = self.users.get(&user_id).cloned();
+                payload.space_id = self.id;
                 let msg = payload.clone();
+                self.save_chat(&msg);
                 self.chat.push(msg);
                 Action::Chat { payload }
             }
@@ -40,6 +45,7 @@ impl Service {
                 let msg = payload.clone();
                 let line = self.lines.entry(msg.id.clone()).or_insert(DrawnLine {
                     id: msg.id,
+                    space_id: self.id,
                     color: msg.color,
                     points: vec![],
                     action: msg.action,
@@ -47,17 +53,19 @@ impl Service {
                 });
                 line.points.push(msg.point.x);
                 line.points.push(msg.point.y);
+                if let Err(e) = self.backend.upsert_drawn_line(line) {
+                    log::error!("failed to save drawn line message: {:?}", e)
+                };
                 Action::Draw { payload }
             }
             Action::Widget { mut payload } => {
                 payload.user_id = user_id;
+                payload.space_id = self.id;
                 let id = payload.id.clone();
                 self.widgets.insert(id.clone(), payload);
                 let widget = self.widgets.get(&id).unwrap().to_owned();
-                self.save(serde_json::to_vec(&widget).unwrap().as_ref());
-                Action::Widget {
-                    payload: widget,
-                }
+                self.save_widget(&widget);
+                Action::Widget { payload: widget }
             }
             Action::Join { payload } => {
                 self.users.insert(payload.id, payload.clone());
@@ -96,9 +104,15 @@ impl Service {
         self.users.values().cloned().collect()
     }
 
-    fn save(&self, data: &[u8]) {
-        if let Err(e) = self.backend.upsert(self.id, data) {
-            log::error!("failed to save message: {:?}", e)
+    fn save_widget(&self, widget: &Widget) {
+        if let Err(e) = self.backend.upsert_widget(widget) {
+            log::error!("failed to save widget: {:?}", e)
+        };
+    }
+
+    fn save_chat(&self, chat: &ChatMessage) {
+        if let Err(e) = self.backend.upsert_chat(&chat) {
+            log::error!("failed to save chat message: {:?}", e)
         };
     }
 }

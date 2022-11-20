@@ -39,6 +39,10 @@ storage.start:
 storage.stop:
 	docker compose down
 
+## Run db migrations that will configure Materialize DB
+migrate.up:
+	psql postgresql://materialize:materialize@localhost:6875/materialize -f .migrations/core_tables.sql
+
 ## Start up the orim board server
 run.server:
 	cd server && cargo run

@@ -4,7 +4,7 @@ a collaborative chat and white board app built with Rust and Next.js
 
 ## purpose
 
-to experiment with implementing latency sensitive web applications with Rust and Web Canvas (via React).
+to experiment with implementing latency sensitive web applications with Rust, Web Canvas and Materialize DB.
 
 ## project architecture
 
@@ -17,10 +17,18 @@ When running in k8s - the board servers are treated as game servers, and are man
 
 ### getting started
 
-1. [Install Rust](https://www.rust-lang.org/tools/install) ( >= rustc 1.62.0 )
-2. [Install Node.js](https://nodejs.org/en/download/current/) (>= v18.9.0)
+1. Install Docker
+2. [Install Rust](https://www.rust-lang.org/tools/install) ( >= rustc 1.62.0 )
+3. [Install Node.js](https://nodejs.org/en/download/current/) (>= v18.9.0)
+4. [Install psql](https://wiki.postgresql.org/wiki/Homebrew)
 
 ```
+## provision and start up storage stack (kafka and materialize)
+make storage.start:
+
+## run migrations
+make migrate.up
+
 ## start up the api server
 make run.api
 

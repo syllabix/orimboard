@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use super::user;
+use super::{user, space};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -13,11 +13,15 @@ pub enum DrawAction {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ChatMessage {
+    pub id: String,
     pub text: String,
     pub sent_at: String,
 
     #[serde(skip_deserializing)]
     pub user: Option<UserProfile>,
+
+    #[serde(skip_deserializing)]
+    pub space_id: space::ID,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -47,6 +51,9 @@ pub struct DrawnLine {
     pub points: Vec<i64>,
     pub action: DrawAction,
     pub user_id: user::ID,
+
+    #[serde(skip_deserializing)]
+    pub space_id: space::ID,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -76,6 +83,9 @@ pub struct Widget {
 
     #[serde(skip_deserializing)]
     pub user_id: user::ID,
+
+    #[serde(skip_deserializing)]
+    pub space_id: space::ID,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

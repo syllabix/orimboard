@@ -1,19 +1,14 @@
-use std::{
-    fmt,
-    sync::{
-        atomic::{AtomicBool, Ordering},
-        Arc,
-    },
-    time::Duration,
-};
+use std::{fmt, sync::Arc};
 
 use rdkafka::{
-    producer::{BaseProducer, BaseRecord},
+    producer::{BaseRecord, ThreadedProducer},
     ClientConfig,
 };
-use tokio::task::JoinHandle;
 
-use crate::board::space;
+use crate::board::{
+    component::{ChatMessage, Widget, DrawnLine},
+    space,
+};
 
 use super::kafka;
 
@@ -24,9 +19,7 @@ pub struct Error {
 
 #[derive(Clone)]
 pub struct Backend {
-    producer: BaseProducer<kafka::CallbackLogger>,
-    should_stop: Arc<AtomicBool>,
-    handle: Arc<JoinHandle<()>>,
+    producer: Arc<ThreadedProducer<kafka::CallbackLogger>>,
 }
 
 impl Backend {
@@ -34,56 +27,53 @@ impl Backend {
         log::info!("setting up kafka producer...");
         let producer = ClientConfig::new()
             .set("bootstrap.servers", "localhost:9092")
-            .set("security.protocol", "PLAINTEXT")
             .create_with_context(kafka::CallbackLogger {})
             .expect("failed to create kafka client");
 
-        Backend::setup(producer)
+        Backend {
+            producer: Arc::new(producer),
+        }
     }
 
-    pub fn upsert(&self, id: space::ID, data: &[u8]) -> Result<(), Error> {
-        log::info!("send message to kafka...");
-        let space_id = format!("space-{}", id);
-        match self
-            .producer
-            .send(BaseRecord::to("widgets").key(&space_id).payload(data))
-        {
-            Ok(_) => {
-                log::info!("message sent ok!");
-                Ok(())
-            },
+    pub fn upsert_widget(&self, widget: &Widget) -> Result<(), Error> {
+        let data = serde_json::to_vec(widget).unwrap();
+        match self.producer.send(
+            BaseRecord::to("widgets")
+                .key(&widget.id)
+                .payload(data.as_slice()),
+        ) {
+            Ok(_) => Ok(()),
             Err(e) => Err(Error {
                 reason: e.0.to_string(),
             }),
         }
     }
 
-    fn setup(producer: BaseProducer<kafka::CallbackLogger>) -> Self {
-        let should_stop = Arc::new(AtomicBool::new(false));
+    pub fn upsert_chat(&self, message: &ChatMessage) -> Result<(), Error> {
+        let data = serde_json::to_vec(message).unwrap();
+        match self.producer.send(
+            BaseRecord::to("chats")
+                .key(&message.id)
+                .payload(data.as_slice()),
+        ) {
+            Ok(_) => Ok(()),
+            Err(e) => Err(Error {
+                reason: e.0.to_string(),
+            }),
+        }
+    }
 
-        let handle = {
-            let producer = producer.clone();
-            let should_stop = should_stop.clone();
-            tokio::spawn(async move {
-                loop {
-                    let n = producer.poll(Duration::from_millis(100));
-                    if n == 0 {
-                        if should_stop.load(Ordering::Relaxed) {
-                            // We received nothing and the thread should
-                            // stop, so break the loop.
-                            break;
-                        }
-                    } else {
-                        log::info!("Received {} events", n);
-                    }
-                }
-            })
-        };
-        log::info!("setup polling thread - let's go!");
-        Backend {
-            producer,
-            should_stop,
-            handle: Arc::new(handle),
+    pub fn upsert_drawn_line(&self, line: &DrawnLine) -> Result<(), Error> {
+        let data = serde_json::to_vec(line).unwrap();
+        match self.producer.send(
+            BaseRecord::to("drawn_lines")
+                .key(&line.id)
+                .payload(data.as_slice()),
+        ) {
+            Ok(_) => Ok(()),
+            Err(e) => Err(Error {
+                reason: e.0.to_string(),
+            }),
         }
     }
 }
@@ -91,14 +81,5 @@ impl Backend {
 impl fmt::Debug for Backend {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("Backend").finish()
-    }
-}
-
-impl Drop for Backend {
-    fn drop(&mut self) {
-        log::info!("Stopping polling");
-        self.should_stop.store(true, Ordering::Relaxed);
-        log::info!("Waiting for polling thread termination");
-        self.handle.abort()
     }
 }

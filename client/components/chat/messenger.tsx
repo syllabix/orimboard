@@ -55,6 +55,7 @@ export const Messenger: React.FC<Props> = ({ send, user, users, messages }) => (
           send({
             type: "chat",
             payload: {
+              id: new Date().getTime().toString(),
               text: values.message.trim(),
               sentAt: new Date().toISOString(),
               user,

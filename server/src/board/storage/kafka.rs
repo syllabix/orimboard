@@ -15,7 +15,7 @@ impl ProducerContext for CallbackLogger {
         match delivery_result.as_ref() {
             Ok(msg) => {
                 let key: &str = msg.key_view().unwrap().unwrap();
-                log::info!(
+                log::debug!(
                     "produced message\nkey = {}, offset = {}, partition = {}",
                     key,
                     msg.offset(),
