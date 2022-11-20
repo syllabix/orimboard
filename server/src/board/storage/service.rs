@@ -1,10 +1,9 @@
 use std::collections::HashMap;
 
-use super::{
-    component::{ChatMessage, DrawnLine, UserProfile, Widget},
-    message::{Action, SpaceInfo},
-    space, user,
-};
+use crate::board::{space, component::{ChatMessage, DrawnLine, UserProfile, Widget}, user, message::{Action, SpaceInfo}};
+
+use super::backend::Backend;
+
 
 #[derive(Debug, Clone)]
 pub struct Service {
@@ -13,6 +12,7 @@ pub struct Service {
     lines: HashMap<String, DrawnLine>,
     users: HashMap<user::ID, UserProfile>,
     widgets: HashMap<String, Widget>,
+    backend: Backend,
 }
 
 impl Service {
@@ -23,6 +23,7 @@ impl Service {
             lines: Default::default(),
             users: Default::default(),
             widgets: Default::default(),
+            backend: Backend::new(),
         }
     }
 
@@ -52,8 +53,10 @@ impl Service {
                 payload.user_id = user_id;
                 let id = payload.id.clone();
                 self.widgets.insert(id.clone(), payload);
+                let widget = self.widgets.get(&id).unwrap().to_owned();
+                self.save(serde_json::to_vec(&widget).unwrap().as_ref());
                 Action::Widget {
-                    payload: self.widgets.get(&id).unwrap().to_owned(),
+                    payload: widget,
                 }
             }
             Action::Join { payload } => {
@@ -91,5 +94,11 @@ impl Service {
 
     fn users(&self) -> Vec<UserProfile> {
         self.users.values().cloned().collect()
+    }
+
+    fn save(&self, data: &[u8]) {
+        if let Err(e) = self.backend.upsert(self.id, data) {
+            log::error!("failed to save message: {:?}", e)
+        };
     }
 }

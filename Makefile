@@ -31,6 +31,14 @@ run.client:
 run.api:
 	cd api && cargo run
 
+## Set up storage systems (kafka and materialize)
+storage.start:
+	docker compose up
+
+## Stop and tear down storage systems (kafka and materialize)
+storage.stop:
+	docker compose down
+
 ## Start up the orim board server
 run.server:
 	cd server && cargo run
