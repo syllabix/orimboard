@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use super::{
-    component::{ChatMessage, DrawnLine, UserProfile, Widget},
+    component::{ChatMessage, DrawnLine, UserProfile, Widget, UserPosition},
     message::{Action, SpaceInfo},
     space, user,
 };
@@ -13,6 +13,7 @@ pub struct Service {
     lines: HashMap<String, DrawnLine>,
     users: HashMap<user::ID, UserProfile>,
     widgets: HashMap<String, Widget>,
+    user_positions: HashMap<String, UserPosition>,
 }
 
 impl Service {
@@ -21,6 +22,7 @@ impl Service {
             id,
             chat: Default::default(),
             lines: Default::default(),
+            user_positions: Default::default(),
             users: Default::default(),
             widgets: Default::default(),
         }
@@ -64,6 +66,9 @@ impl Service {
                 self.users.remove(&payload);
                 Action::Leave { payload }
             }
+            Action::Move { payload } => {
+                Action::Move { payload }
+            }
         }
     }
 
@@ -74,6 +79,7 @@ impl Service {
             chat: self.chat_history(),
             lines: self.drawings(),
             users: self.users(),
+            user_positions: self.user_positions(),
         }
     }
 
@@ -91,5 +97,9 @@ impl Service {
 
     fn users(&self) -> Vec<UserProfile> {
         self.users.values().cloned().collect()
+    }
+
+    fn user_positions(&self) -> Vec<UserPosition> {
+        self.user_positions.values().cloned().collect()
     }
 }

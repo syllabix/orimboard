@@ -5,6 +5,12 @@ export type Point = {
   y: number;
 };
 
+export type UserPositon = {
+  id: string;
+  point: Point;
+  userName: string;
+};
+
 export type LineData = {
   id: string;
   tool: Tool;

@@ -4,7 +4,7 @@ import { provider } from "api/http/provider";
 import { Dispatch, useEffect, useMemo } from "react";
 import useSWR from "swr";
 import { ChatMessage } from "whiteboard/chat";
-import { LineData } from "whiteboard/drawing/line";
+import { LineData, UserPositon } from "whiteboard/drawing/line";
 import { User } from "whiteboard/user";
 import { WidgetData } from "whiteboard/widget";
 import { GameServer } from "./useAllocator";
@@ -14,6 +14,7 @@ export interface BoardState {
   widgets: Widget[];
   chat: Array<ChatMessage>;
   lines: Array<LineData>;
+  userPositions: Array<UserPositon>;
   users: Array<User>;
 }
 export interface Widget {
@@ -40,13 +41,13 @@ export const useBoardStateLoader = (id: string, server: GameServer) => {
     `http://${server.address}:${server.port}/v1/board/${id}`,
     (url) => http.get<BoardState>(url)
   );
-
   return {
     data: data?.data || {
       widgets: data?.data.widgets || ([] as Array<WidgetData>),
       chat: data?.data.chat || ([] as Array<ChatMessage>),
       lines: data?.data.lines || ([] as Array<LineData>),
       users: data?.data.users || ([] as Array<User>),
+      userPositions: data?.data.userPositions || ([] as Array<UserPositon>),
     },
     isLoading: !data,
     error: error,

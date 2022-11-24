@@ -1,8 +1,9 @@
 import { KonvaEventObject } from "konva/lib/Node";
 import { ReactNode, useRef } from "react";
-import { Layer, Line, Stage } from "react-konva";
+import { Text, Layer, Line, Stage } from "react-konva";
 import { useWindowSize } from "whiteboard/hooks/useWindowSize";
 import { BoardAction } from "whiteboard/state/action";
+import { UserPositon } from "./drawing/line";
 import BoardState from "./state";
 
 type Props = {
@@ -56,27 +57,38 @@ export const Sketchpad: React.FC<Props> = ({
   };
 
   const handleMouseMove = (e: KonvaEventObject<MouseEvent>) => {
-    // no drawing - skipping
-    if (!drawing.current.active) {
-      return;
-    }
-
     const stage = e.target.getStage();
     const pos = stage?.getPointerPosition();
     if (pos == null) return;
-
-    dispatch({
-      type: "draw",
-      payload: {
-        id: drawing.current.id,
-        point: {
-          x: pos.x,
-          y: pos.y,
+    
+    if (drawing.current.active) {
+      dispatch({
+        type: "draw",
+        payload: {
+          id: drawing.current.id,
+          point: {
+            x: pos.x,
+            y: pos.y,
+          },
+          color: "#34ebc0",
+          action: "stroke",
         },
-        color: "#34ebc0",
-        action: "stroke",
-      },
-    });
+      });
+    } else{
+      const id = new Date().getTime().toString();
+
+      dispatch({
+        type: "move",
+        payload: {
+          id: id,
+          point: {
+            x: pos.x,
+            y: pos.y,
+          },
+          userName: state.activeUser.name
+        },
+      });
+    }
   };
 
   const handleMouseUp = (e: KonvaEventObject<MouseEvent>) => {
@@ -99,6 +111,17 @@ export const Sketchpad: React.FC<Props> = ({
     >
       {children}
       <Layer>
+        {[...state.userPositions.values()].map(userPosition => (
+          <Text
+            text={userPosition.userName}
+            x = {userPosition.point.x}
+            y = {userPosition.point.y}
+            key={userPosition.id}
+            fontSize={15}
+            fontFamily={"Calibri"}
+            fill={"#34ebc0"}
+          />          
+        ))}
         {state.lines.map((line) => (
           <Line
             key={line.id}
@@ -113,6 +136,7 @@ export const Sketchpad: React.FC<Props> = ({
             }
           />
         ))}
+        
       </Layer>
     </Stage>
   );

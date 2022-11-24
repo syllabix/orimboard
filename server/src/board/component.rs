@@ -51,6 +51,14 @@ pub struct DrawnLine {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+pub struct UserPosition {
+    pub id: String,
+    pub point: Point,
+    pub user_name: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub enum WidgetKind {
     Sticky,
     Rect,

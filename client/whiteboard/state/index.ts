@@ -1,5 +1,5 @@
 import { PalletteMode } from "components/pallette";
-import { LineData } from "whiteboard/drawing/line";
+import { LineData, Point, UserPositon } from "whiteboard/drawing/line";
 import { ChatMessage } from "../chat";
 import { User } from "../user";
 import { WidgetData, WidgetKind } from "../widget";
@@ -15,6 +15,7 @@ type BoardState = {
   users: UserState;
   chat: Array<ChatMessage>;
   widgets: WidgetState;
+  userPositions: Map<string, UserPositon>;
   lines: Array<LineData>;
 };
 
