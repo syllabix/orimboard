@@ -50,7 +50,6 @@ pub struct SpaceInfo {
     pub chat: Vec<ChatMessage>,
     pub lines: Vec<DrawnLine>,
     pub users: Vec<UserProfile>,
-    pub user_positions: Vec<UserPosition>,
 }
 
 #[derive(Message)]

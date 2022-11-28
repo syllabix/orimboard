@@ -54,7 +54,7 @@ pub struct DrawnLine {
 pub struct UserPosition {
     pub id: String,
     pub point: Point,
-    pub user_name: String,
+    pub user_id: user::ID,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

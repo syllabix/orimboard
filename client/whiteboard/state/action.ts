@@ -37,7 +37,6 @@ type SetupState = {
     chat: Array<ChatMessage>;
     lines: Array<LineData>;
     users: Array<User>;
-    userPositions: Array<UserPositon>;
   };
 };
 

@@ -8,7 +8,15 @@ export type Point = {
 export type UserPositon = {
   id: string;
   point: Point;
+  userId: number;
+};
+
+export type CursorPositon = {
+  id: string;
+  point: Point;
+  userId: number;
   userName: string;
+  color: string;
 };
 
 export type LineData = {

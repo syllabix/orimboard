@@ -15,7 +15,7 @@ type BoardState = {
   users: UserState;
   chat: Array<ChatMessage>;
   widgets: WidgetState;
-  userPositions: Map<string, UserPositon>;
+  userPositions: Map<number, UserPositon>;
   lines: Array<LineData>;
 };
 

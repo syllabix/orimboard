@@ -35,6 +35,7 @@ export const useSocket = (
 
     ws.current.onmessage = (evt: MessageEvent) => {
       let data = JSON.parse(evt.data);
+      console.log("event", evt.data)
       let action = data.action as BoardAction;
       dispatch(action);
     };

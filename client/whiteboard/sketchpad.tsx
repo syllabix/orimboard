@@ -3,7 +3,6 @@ import { ReactNode, useRef } from "react";
 import { Text, Layer, Line, Stage } from "react-konva";
 import { useWindowSize } from "whiteboard/hooks/useWindowSize";
 import { BoardAction } from "whiteboard/state/action";
-import { UserPositon } from "./drawing/line";
 import BoardState from "./state";
 
 type Props = {
@@ -85,7 +84,7 @@ export const Sketchpad: React.FC<Props> = ({
             x: pos.x,
             y: pos.y,
           },
-          userName: state.activeUser.name
+          userId: state.activeUser.id,
         },
       });
     }
@@ -119,7 +118,7 @@ export const Sketchpad: React.FC<Props> = ({
             key={userPosition.id}
             fontSize={15}
             fontFamily={"Calibri"}
-            fill={"#34ebc0"}
+            fill={userPosition.color}
           />          
         ))}
         {state.lines.map((line) => (
