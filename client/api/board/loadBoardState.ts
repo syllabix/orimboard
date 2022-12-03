@@ -40,7 +40,6 @@ export const useBoardStateLoader = (id: string, server: GameServer) => {
     `http://${server.address}:${server.port}/v1/board/${id}`,
     (url) => http.get<BoardState>(url)
   );
-
   return {
     data: data?.data || {
       widgets: data?.data.widgets || ([] as Array<WidgetData>),

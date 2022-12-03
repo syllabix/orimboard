@@ -1,5 +1,5 @@
 import { useReducer } from "react";
-import { LineData } from "whiteboard/drawing/line";
+import { LineData, CursorPositon } from "whiteboard/drawing/line";
 import { User } from "whiteboard/user";
 import { WidgetData } from "whiteboard/widget";
 import BoardState, { UserState, WidgetState } from ".";
@@ -13,6 +13,7 @@ const initialState: BoardState = {
   chat: [],
   users: {},
   widgets: {},
+  userPositions: new Map<number, CursorPositon>,
   lines: [],
 };
 
@@ -89,6 +90,17 @@ const reducer = (state: BoardState, action: BoardAction): BoardState => {
           };
       }
 
+      case "move":
+        if (state.activeUser.id != action.payload.userId){
+          let cursorPositon = action.payload as CursorPositon;
+          cursorPositon.userName = state.users[action.payload.userId].name;
+          cursorPositon.color = state.users[action.payload.userId].color;
+          state.userPositions.set(action.payload.userId, cursorPositon);
+        }
+        return {
+          ...state,
+        };
+        
     case "setup":
       const widgets = action.payload.widgets.reduce((prev, cur) => {
         return {
@@ -103,12 +115,13 @@ const reducer = (state: BoardState, action: BoardAction): BoardState => {
           ...{ [cur.id]: cur },
         };
       }, {} as UserState);
-
+      
       return {
         ...state,
         activeUser: action.payload.activeUser,
         chat: action.payload.chat,
         lines: action.payload.lines,
+        userPositions: new Map<number, CursorPositon>,
         widgets: {
           ...state.widgets,
           ...widgets,

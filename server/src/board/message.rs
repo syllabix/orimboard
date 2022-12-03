@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 use std::time::SystemTime;
 
 use super::{
-    component::{ChatMessage, DrawInstruction, DrawnLine, UserProfile, Widget},
+    component::{ChatMessage, DrawInstruction, DrawnLine, UserProfile, Widget, UserPosition},
     space, user,
 };
 
@@ -29,6 +29,7 @@ pub enum Action {
     Widget { payload: Widget },
     Join { payload: UserProfile },
     Leave { payload: user::ID },
+    Move { payload: UserPosition },
 }
 
 #[derive(Message, Serialize, Clone, Debug)]

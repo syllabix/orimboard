@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use super::{
-    component::{ChatMessage, DrawnLine, UserProfile, Widget},
+    component::{ChatMessage, DrawnLine, UserProfile, Widget, UserPosition},
     message::{Action, SpaceInfo},
     space, user,
 };
@@ -64,6 +64,7 @@ impl Service {
                 self.users.remove(&payload);
                 Action::Leave { payload }
             }
+            _ =>  action
         }
     }
 
@@ -92,4 +93,5 @@ impl Service {
     fn users(&self) -> Vec<UserProfile> {
         self.users.values().cloned().collect()
     }
+
 }

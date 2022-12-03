@@ -28,6 +28,7 @@ export const BoardStateLoader: React.FC<Props> = ({
         chat: data.chat,
         lines: data.lines,
         users: data.users,
+        userPositions : data.userPositions,
       },
     });
   }, [data]);
