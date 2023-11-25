@@ -90,17 +90,17 @@ const reducer = (state: BoardState, action: BoardAction): BoardState => {
           };
       }
 
-      case "move":
-        if (state.activeUser.id != action.payload.userId){
-          let cursorPositon = action.payload as CursorPositon;
-          cursorPositon.userName = state.users[action.payload.userId].name;
-          cursorPositon.color = state.users[action.payload.userId].color;
-          state.userPositions.set(action.payload.userId, cursorPositon);
-        }
-        return {
-          ...state,
-        };
-        
+    case "move":
+      if (state.activeUser.id != action.payload.userId) {
+        let cursorPositon = action.payload as CursorPositon;
+        cursorPositon.userName = state.users[action.payload.userId].name;
+        cursorPositon.color = state.users[action.payload.userId].color;
+        state.userPositions.set(action.payload.userId, cursorPositon);
+      }
+      return {
+        ...state,
+      };
+
     case "setup":
       const widgets = action.payload.widgets.reduce((prev, cur) => {
         return {
@@ -115,7 +115,7 @@ const reducer = (state: BoardState, action: BoardAction): BoardState => {
           ...{ [cur.id]: cur },
         };
       }, {} as UserState);
-      
+
       return {
         ...state,
         activeUser: action.payload.activeUser,
