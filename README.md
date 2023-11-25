@@ -9,6 +9,7 @@ to experiment with implementing latency sensitive web applications with Rust and
 ## project architecture
 
 Orimboard is composed of 3 micro services:
+
 1. The client (a next.js web app - used for rendering the UI, whiteboards, etc)
 2. The API (a backend used to manage user state, facilitate new game server allocation, handle general business logic etc)
 3. The (board)server - the real time engine used to facilitate collaborative white board editing and chat
@@ -20,7 +21,7 @@ When running in k8s - the board servers are treated as game servers, and are man
 1. [Install Rust](https://www.rust-lang.org/tools/install) ( >= rustc 1.62.0 )
 2. [Install Node.js](https://nodejs.org/en/download/current/) (>= v18.9.0)
 
-```
+```bash
 ## start up the api server
 make run.api
 
@@ -31,7 +32,7 @@ make run.server
 make run.client
 ```
 
-then open multiple web browsers @ http://localhost:3000
+then open multiple web browsers @ <http://localhost:3000>
 
 ### minikube quickstart
 
@@ -43,7 +44,7 @@ orim can run on Kubernetes locally with `skaffold` and `minikube`. This setup wa
 
 1. Start and configure `minikube`:
 
-```
+```bash
 minikube delete # optional - deletes old minikube setup if exists.
 minikube start
 minikube addons enable ingress
@@ -53,7 +54,7 @@ Note: On Mac, we need to use `minikube start --driver=virtualbox`, because netwo
 
 2. Add IP address for `orimboard.io` into the `/etc/hosts` file (needs administrator access):
 
-```
+```bash
 minikube ip # Returns the IP address of the minikube VM
 
 # Add following entry to the /etc/hosts (replacing the IP address)
@@ -62,15 +63,33 @@ minikube ip # Returns the IP address of the minikube VM
 
 3. Trigger `skaffold dev` for auto-rebuild on source code update:
 
-```
+```bash
 skaffold dev
 ```
 
 Skaffold will build the docker images using the `docker` host on `minikube`, and then deploy kubernetes resourcess. It will need some time for the deployment to stabilize.
 
-4. Access http://orimboard.io from your favorite browser!
+4. Access <http://orimboard.io> from your favorite browser!
 
 `CTRL + C` will stop `skaffold`, and cleanup and resources that was created at step #3. Then `minikube stop` will stop `minikube`, and could be restarted again with existing images in cache.
+
+## cloud environment setup
+
+There are simple infra scripts in the `.cloud` directory of the project that can be run for to provision a minimum viable compute environment to run orimboard.
+**Important** - the following commands will provision billable infrastructure. Please consult your current account information with your perspective cloud provider.
+
+### Google Cloud
+
+Ensure you have [gcloud](https://cloud.google.com/sdk/gcloud/) installed. Once setup, run the following:
+
+```bash
+# you must provide a value for $PROJECT_ID. region and clustername will fallback to defaults. please consult the script
+./.cloud/gcp/setup.sh $PROJECT_ID $REGION $CLUSTER_NAME
+```
+
+### Amazon Web Services (coming soon)
+
+There is an example script in the .cloud/aws directory, but please be advised it is not tested.
 
 ## known issues
 
