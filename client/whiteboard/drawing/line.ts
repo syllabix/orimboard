@@ -9,6 +9,8 @@ export type UserPositon = {
   id: string;
   point: Point;
   userId: number;
+  userName?: string;
+  color?: string;
 };
 
 export type CursorPositon = {
