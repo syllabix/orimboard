@@ -1,4 +1,15 @@
-FROM rust:1.64-slim as builder
+FROM rust:1.74-slim as builder
+
+ARG PROTOC_VERSION="25.1"
+ENV PROTOC=/build/vendor/protoc/bin/protoc
+
+WORKDIR /build/vendor
+RUN apt-get update; \
+    apt-get install -y wget unzip; \
+    rm -rf /var/lib/apt/lists/*; \
+    wget https://github.com/protocolbuffers/protobuf/releases/download/v${PROTOC_VERSION}/protoc-${PROTOC_VERSION}-linux-x86_64.zip; \
+    unzip -o "protoc-${PROTOC_VERSION}-linux-x86_64.zip" -d /build/vendor/protoc; \
+    chmod +x /build/vendor/protoc/bin/protoc;
 
 WORKDIR /build
 RUN cargo init --bin --name orim-api
@@ -12,8 +23,8 @@ COPY src /build/src
 
 RUN cargo build --release --features agones_sdk
 
-# Debian 11 (bullseye)
-FROM debian:11-slim
+# Debian 12 (bookworm)
+FROM debian:12-slim
 
 RUN apt update
 RUN apt install curl -y

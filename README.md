@@ -17,8 +17,9 @@ When running in k8s - the board servers are treated as game servers, and are man
 
 ### getting started
 
-1. [Install Rust](https://www.rust-lang.org/tools/install) ( >= rustc 1.62.0 )
-2. [Install Node.js](https://nodejs.org/en/download/current/) (>= v18.9.0)
+1. Install [Rust](https://www.rust-lang.org/tools/install) ( >= rustc 1.74.0 )
+2. Install [Node.js](https://nodejs.org/en/download/current/) (>= v18.9.0)
+3. _Optional, required for Agones SDK_: Install Protocol Buffers Compiler. Easiest way is to use `apt-get install protobuf-compiler` (Linux) or `brew install protobuf` (Mac).
 
 ```
 ## start up the api server
@@ -66,7 +67,7 @@ minikube ip # Returns the IP address of the minikube VM
 skaffold dev
 ```
 
-Skaffold will build the docker images using the `docker` host on `minikube`, and then deploy kubernetes resourcess. It will need some time for the deployment to stabilize.
+Skaffold will build the docker images using the `docker` host on `minikube`, and then deploy kubernetes resources. It will need some time for the deployment to stabilize.
 
 4. Access http://orimboard.io from your favorite browser!
 
