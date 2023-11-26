@@ -1,4 +1,4 @@
-FROM rust:1.64-slim as builder
+FROM rust:1.74-slim as builder
 
 WORKDIR /build
 RUN cargo init --bin --name orim-api
@@ -12,7 +12,7 @@ COPY src /build/src
 RUN cargo build --release
 
 # Debian 11 (bullseye)
-FROM debian:11-slim
+FROM debian:12-slim
 
 RUN apt update
 RUN apt install curl -y

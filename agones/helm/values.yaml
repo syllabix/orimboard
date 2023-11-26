@@ -1,4 +1,4 @@
-# Overrides values from: https://github.com/googleforgames/agones/blob/release-1.26.0/install/helm/agones/values.yaml
+# Overrides values from: https://github.com/googleforgames/agones/blob/release-1.36.0/install/helm/agones/values.yaml
 agones:
   # Almost identical to default; Example=true&PlayerTracking=false
   featureGates: CustomFasSyncInterval=true&PlayerAllocationFilter=false&PlayerTracking=true&ResetMetricsOnDelete=false&SDKGracefulTermination=false&StateAllocationFilter=true

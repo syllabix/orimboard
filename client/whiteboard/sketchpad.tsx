@@ -112,13 +112,13 @@ export const Sketchpad: React.FC<Props> = ({
       <Layer>
         {[...state.userPositions.values()].map(userPosition => (
           <Text
-            text={userPosition.userName}
+            text={state.users[userPosition.userId].name}
             x = {userPosition.point.x}
             y = {userPosition.point.y}
             key={userPosition.id}
             fontSize={15}
             fontFamily={"Calibri"}
-            fill={userPosition.color}
+            fill={state.users[userPosition.userId].color}
           />          
         ))}
         {state.lines.map((line) => (

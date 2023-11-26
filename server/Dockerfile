@@ -1,4 +1,4 @@
-FROM rust:1.64-slim as builder
+FROM rust:1.74-slim as builder
 
 WORKDIR /build
 RUN cargo init --bin --name orim-board-server
@@ -11,8 +11,8 @@ COPY src /build/src
 
 RUN cargo build --release
 
-# Debian 11 (bullseye)
-FROM debian:11-slim
+# Debian 12 (bookworm)
+FROM debian:12-slim
 
 WORKDIR /app
 COPY --from=builder /build/target/release/orim-board-server /app/

@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use super::{
-    component::{ChatMessage, DrawnLine, UserProfile, Widget, UserPosition},
+    component::{ChatMessage, DrawnLine, UserProfile, Widget},
     message::{Action, SpaceInfo},
     space, user,
 };
