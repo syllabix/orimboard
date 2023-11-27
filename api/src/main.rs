@@ -7,6 +7,7 @@ use actix_web::{web, App, HttpServer};
 
 mod board;
 mod handler;
+mod telemetry;
 mod user;
 
 #[tokio::main]
@@ -14,7 +15,7 @@ async fn main() -> std::io::Result<()> {
     std::env::set_var("RUST_BACKTRACE", "1");
     std::env::set_var("RUST_LOG", "debug");
     let log_level = std::env::var("RUST_LOG").unwrap_or_else(|_| "debug".to_string());
-    std::env::set_var("RUST_LOG", log_level);
+    std::env::set_var("RUST_LOG", &log_level);
 
     let host = std::env::var("HOST").unwrap_or_else(|_| "127.0.0.1".to_string());
     let port = std::env::var("PORT")
@@ -23,6 +24,12 @@ async fn main() -> std::io::Result<()> {
 
     let allocator_url =
         std::env::var("AGONES_ALLOCATOR_URL").unwrap_or_else(|_| "127.0.0.1".to_string());
+
+    // telemetry::init_tracing(
+    //     String::from("orim-board-server"),
+    //     log_level,
+    //     String::from("http://localhost:4317"),
+    // );
 
     env_logger::init();
 

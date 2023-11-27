@@ -18,6 +18,7 @@ impl Client {
         }
     }
 
+    #[tracing::instrument(name = "get", skip(self))]
     pub async fn get(&self, id: u16) -> Result<Participant, Box<dyn std::error::Error>> {
         let url = format!("{}/{}", self.url, id);
         let result: Participant = self.http.get(url).send().await?.json().await?;

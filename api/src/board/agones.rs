@@ -78,6 +78,7 @@ impl Client {
         }
     }
 
+    #[tracing::instrument(name = "allocate", skip(self, board_id))]
     pub async fn allocate(
         &self,
         board_id: usize,
@@ -103,7 +104,6 @@ impl Client {
                 },
             ],
         };
-        log::debug!("Allocate request: {:?}", &req_body);
         let result: AllocateResponse = self
             .http
             .post(&self.url)
