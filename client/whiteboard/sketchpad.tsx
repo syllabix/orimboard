@@ -4,6 +4,7 @@ import { Text, Layer, Line, Stage } from "react-konva";
 import { useWindowSize } from "whiteboard/hooks/useWindowSize";
 import { BoardAction } from "whiteboard/state/action";
 import BoardState from "./state";
+import { v4 as uuidv4 } from "uuid";
 
 type Props = {
   state: BoardState;
@@ -33,8 +34,7 @@ export const Sketchpad: React.FC<Props> = ({
     const pos = e.target.getStage()?.getPointerPosition();
     if (pos == null) return;
 
-    // TODO: all ids need to be set on the backend
-    const id = new Date().getTime().toString();
+    const id = uuidv4();
 
     drawing.current = {
       active: true,
@@ -74,7 +74,7 @@ export const Sketchpad: React.FC<Props> = ({
         },
       });
     } else {
-      const id = new Date().getTime().toString();
+      const id = uuidv4();
 
       dispatch({
         type: "move",

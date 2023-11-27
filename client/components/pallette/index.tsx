@@ -2,6 +2,7 @@ import Button from "components/button";
 import { Card } from "components/layout/card";
 import { BoardAction } from "whiteboard/state/action";
 import { WidgetKind } from "whiteboard/widget";
+import { v4 as uuidv4 } from 'uuid';
 
 export type PalletteMode = "select" | "draw" | "shape" | "sticky";
 
@@ -15,7 +16,7 @@ const Pallette: React.FC<Props> = ({ onUpdate }) => {
     onUpdate({
       type: "widget",
       payload: {
-        id: new Date().getTime().toString(),
+        id: uuidv4(),
         kind: kind,
         x: 180,
         y: 350,
