@@ -12,13 +12,15 @@ pub async fn create(
     user: web::Json<CreateUserRequest>,
     svc: web::Data<user::Registry>,
 ) -> HttpResponse {
+    log::info!("creating user: {}", user.name);
     let user = svc.create(user.name.as_str());
     HttpResponse::Created().json(user)
 }
 
 pub async fn get(path: web::Path<u16>, svc: web::Data<user::Registry>) -> HttpResponse {
-    let result = svc.get(path.into_inner());
-    match result {
+    let user_id = path.into_inner();
+    log::info!("getting user: {}", user_id);
+    match svc.get(user_id) {
         Some(user) => HttpResponse::Ok().json(user),
         None => HttpResponse::NotFound().finish(),
     }

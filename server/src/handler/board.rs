@@ -54,7 +54,7 @@ async fn get_user(
     }
 }
 
-fn get_space_id(req: &HttpRequest) -> Result<space::ID, Error> {
+fn parse_space_id(req: &HttpRequest) -> Result<space::ID, Error> {
     let space_id: &str = match req.match_info().get("id") {
         Some(id) => id,
         None => return Err(Error::from(ServerError::InvalidBoardId)),
@@ -74,7 +74,7 @@ pub async fn connect(
     user_client: web::Data<user::Client>,
 ) -> Result<HttpResponse, Error> {
     let user = get_user(token.tk, user_client).await?;
-    let space_id = get_space_id(&req)?;
+    let space_id = parse_space_id(&req)?;
     let space = spaces.get_or_create(space_id).await;
 
     ws::start(

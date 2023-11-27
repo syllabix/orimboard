@@ -36,6 +36,7 @@ async fn main() -> std::io::Result<()> {
         App::new()
             .wrap(cors_config())
             .wrap(logger)
+            .route("/", web::get().to(handler::health_check))
             .route("/healthz", web::get().to(handler::health_check))
             .service(
                 web::scope("/v1/user")

@@ -11,8 +11,7 @@ metadata:
   namespace: board
 spec:
   rules:
-    - host: orimboard.io
-      http:
+    - http:
         paths:
           - path: /ws/(.+)
             pathType: Prefix

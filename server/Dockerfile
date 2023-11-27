@@ -1,8 +1,8 @@
-FROM rust:1.64-slim as builder
+FROM rust:1.73-slim as builder
 
 WORKDIR /build
-RUN cargo init --bin --name orim-board-server
 COPY Cargo.toml /build/
+RUN cargo init --bin --name orim-board-server
 
 RUN cargo build --release
 RUN rm src/*.rs && rm target/release/deps/orim_board_server*
@@ -11,8 +11,8 @@ COPY src /build/src
 
 RUN cargo build --release
 
-# Debian 11 (bullseye)
-FROM debian:11-slim
+# Debian 12 (bullseye)
+FROM debian:12-slim
 
 WORKDIR /app
 COPY --from=builder /build/target/release/orim-board-server /app/

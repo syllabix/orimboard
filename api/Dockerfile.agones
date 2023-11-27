@@ -1,29 +1,44 @@
-FROM rust:1.64-slim as builder
+################
+##### Builder
+FROM rust:1.74.0-alpine3.18 as builder
+
+RUN apk update
+RUN apk add --no-cache musl-dev curl unzip
+
+RUN curl -OL https://github.com/google/protobuf/releases/download/v25.1/protoc-25.1-linux-x86_64.zip
+RUN unzip protoc-25.1-linux-x86_64.zip -d protoc3
+RUN mv protoc3/bin/* /usr/bin/
+RUN mv protoc3/include/* /usr/include/
+
+ENV PROTOC /usr/bin/protoc
 
 WORKDIR /build
 RUN cargo init --bin --name orim-api
 COPY Cargo.toml /build/
 
 RUN cargo build --release --features agones_sdk
-
 RUN rm src/*.rs && rm target/release/deps/orim_api*
 
 COPY src /build/src
 
 RUN cargo build --release --features agones_sdk
 
-# Debian 11 (bullseye)
-FROM debian:11-slim
+################
+##### Runtime
+FROM alpine:3.18 as runner
 
-RUN apt update
-RUN apt install curl -y
+RUN apk update
+RUN apk add curl
 
 WORKDIR /app
 COPY --from=builder /build/target/release/orim-api /app/
 
 ENV HOST "0.0.0.0"
 ENV RUST_LOG "debug"
-ENV CORS_ALLOW_ORIGIN "http://orimboard.io"
+ENV CORS_ALLOW_ORIGIN "http://34.107.226.218"
 ENV AGONES_ALLOCATOR_URL "http://agones-allocator.agones-sys.svc.cluster.local"
+
+ENV PORT "8080"
+EXPOSE 8080
 
 CMD ["./orim-api"]

@@ -8,10 +8,13 @@ pub struct Client {
 
 impl Client {
     pub fn new(base_url: String) -> Client {
+        let http = reqwest::Client::builder()
+            .timeout(std::time::Duration::from_secs(5))
+            .build()
+            .unwrap();
         Client {
             url: format!("{}/v1/user", base_url),
-            http: reqwest::Client::new(),
-
+            http,
         }
     }
 
