@@ -75,7 +75,7 @@ Skaffold will build the docker images using the `docker` host on `minikube`, and
 
 ## cloud environment setup
 
-There are simple infra scripts in the `.cloud` directory of the project that can be run for to provision a minimum viable compute environment to run orimboard.
+There are simple infra scripts in the `.cloud` directory of the project that can be run to provision a minimum viable compute environment for orimboard.
 **Important** - the following commands will provision billable infrastructure. Please consult your current account information with your perspective cloud provider.
 
 ### Google Cloud
@@ -84,7 +84,7 @@ Ensure you have [gcloud](https://cloud.google.com/sdk/gcloud/) installed. Once s
 
 ```bash
 # you must provide a value for $PROJECT_ID. region and clustername will fallback to defaults. please consult the script
-./.cloud/gcp/setup.sh $PROJECT_ID $REGION $CLUSTER_NAME
+make cluster.gke project=<your gcp project name>
 ```
 
 ### Amazon Web Services (coming soon)
@@ -99,5 +99,4 @@ There is an example script in the .cloud/aws directory, but please be advised it
 
 1. support rotation transforms for shapes
 2. setup basic user and auth system
-3. cursor tracing
 4. panning and zoom
