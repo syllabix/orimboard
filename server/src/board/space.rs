@@ -69,7 +69,7 @@ impl Handler<Connect> for Space {
             async move {
                 callback
                     .send(BoardEvent::UserConnected {
-                        board_id: board_id,
+                        board_id,
                         user_id: msg.user.id,
                     })
                     .await
@@ -104,7 +104,7 @@ impl Handler<Disconnect> for Space {
             async move {
                 callback
                     .send(BoardEvent::UserLeft {
-                        board_id: board_id,
+                        board_id,
                         user_id: msg.user_id,
                     })
                     .await
