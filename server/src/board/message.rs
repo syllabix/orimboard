@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 use std::time::SystemTime;
 
 use super::{
-    component::{ChatMessage, DrawInstruction, DrawnLine, UserProfile, Widget, UserPosition},
+    component::{ChatMessage, DrawInstruction, DrawnLine, UserPosition, UserProfile, Widget},
     space, user,
 };
 

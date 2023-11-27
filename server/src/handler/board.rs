@@ -41,6 +41,7 @@ pub struct Token {
     tk: u16,
 }
 
+#[tracing::instrument(name = "get_user")]
 async fn get_user(
     user_id: u16,
     user_client: web::Data<user::Client>,
@@ -54,7 +55,7 @@ async fn get_user(
     }
 }
 
-fn get_space_id(req: &HttpRequest) -> Result<space::ID, Error> {
+fn space_id_from(req: &HttpRequest) -> Result<space::ID, Error> {
     let space_id: &str = match req.match_info().get("id") {
         Some(id) => id,
         None => return Err(Error::from(ServerError::InvalidBoardId)),
@@ -66,6 +67,7 @@ fn get_space_id(req: &HttpRequest) -> Result<space::ID, Error> {
     }
 }
 
+#[tracing::instrument(name = "connect", skip(req, stream, token, spaces, user_client))]
 pub async fn connect(
     req: HttpRequest,
     stream: web::Payload,
@@ -74,7 +76,7 @@ pub async fn connect(
     user_client: web::Data<user::Client>,
 ) -> Result<HttpResponse, Error> {
     let user = get_user(token.tk, user_client).await?;
-    let space_id = get_space_id(&req)?;
+    let space_id = space_id_from(&req)?;
     let space = spaces.get_or_create(space_id).await;
 
     ws::start(
@@ -84,6 +86,7 @@ pub async fn connect(
     )
 }
 
+#[tracing::instrument(name = "get_state", skip(space_id, registry))]
 pub async fn get_state(
     space_id: web::Path<space::ID>,
     registry: web::Data<Registry>,

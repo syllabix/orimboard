@@ -2,6 +2,7 @@ use actix_web::{web, HttpResponse};
 
 use crate::board;
 
+#[tracing::instrument(name = "allocate", skip(path, client))]
 pub async fn allocate(path: web::Path<usize>, client: web::Data<board::Client>) -> HttpResponse {
     let board_id = path.into_inner();
     match client.allocate(board_id).await {

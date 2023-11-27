@@ -1,9 +1,9 @@
 import Image from "next/image";
 
-const Logo = () => <Image width={30} height={35} src={"/logo.png"} />;
+const Logo = () => <Image alt="orimboard logo" width={30} height={35} src={"/logo.png"} />;
 
 const BrandTitle = () => (
-  <Image width={71} height={35} src={"/brandtitle.png"} />
+  <Image width={71} height={35} alt="orimboard brand title" src={"/brandtitle.png"} />
 );
 
 export const NavLogo = () => (

@@ -1,6 +1,6 @@
 use std::{collections::HashMap, time::SystemTime};
 
-use actix::{Actor, Context, Handler, Recipient, WrapFuture, ResponseActFuture, ActorFutureExt};
+use actix::{Actor, ActorFutureExt, Context, Handler, Recipient, ResponseActFuture, WrapFuture};
 use tokio::sync::mpsc::Sender;
 
 use crate::gameserver::BoardEvent;
@@ -69,7 +69,7 @@ impl Handler<Connect> for Space {
             async move {
                 callback
                     .send(BoardEvent::UserConnected {
-                        board_id: board_id,
+                        board_id,
                         user_id: msg.user.id,
                     })
                     .await
@@ -83,7 +83,7 @@ impl Handler<Connect> for Space {
                     action: Action::Join { payload: msg.user },
                     created_at: SystemTime::now(),
                 })
-            })
+            }),
         )
     }
 }
@@ -104,7 +104,7 @@ impl Handler<Disconnect> for Space {
             async move {
                 callback
                     .send(BoardEvent::UserLeft {
-                        board_id: board_id,
+                        board_id,
                         user_id: msg.user_id,
                     })
                     .await
@@ -115,10 +115,12 @@ impl Handler<Disconnect> for Space {
                 spc.unregister(msg.user_id);
                 spc.broadcast(Update {
                     user_id: msg.user_id,
-                    action: Action::Leave { payload: msg.user_id },
+                    action: Action::Leave {
+                        payload: msg.user_id,
+                    },
                     created_at: SystemTime::now(),
                 })
-            })
+            }),
         )
     }
 }

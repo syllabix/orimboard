@@ -59,7 +59,7 @@ export const Sketchpad: React.FC<Props> = ({
     const stage = e.target.getStage();
     const pos = stage?.getPointerPosition();
     if (pos == null) return;
-    
+
     if (drawing.current.active) {
       dispatch({
         type: "draw",
@@ -73,7 +73,7 @@ export const Sketchpad: React.FC<Props> = ({
           action: "stroke",
         },
       });
-    } else{
+    } else {
       const id = new Date().getTime().toString();
 
       dispatch({
@@ -112,14 +112,14 @@ export const Sketchpad: React.FC<Props> = ({
       <Layer>
         {[...state.userPositions.values()].map(userPosition => (
           <Text
-            text={userPosition.userName}
-            x = {userPosition.point.x}
-            y = {userPosition.point.y}
+            text={userPosition.userName ?? "Unknown"}
+            x={userPosition.point.x}
+            y={userPosition.point.y}
             key={userPosition.id}
             fontSize={15}
             fontFamily={"Calibri"}
-            fill={userPosition.color}
-          />          
+            fill={userPosition.color ?? "#000000"}
+          />
         ))}
         {state.lines.map((line) => (
           <Line
@@ -135,7 +135,7 @@ export const Sketchpad: React.FC<Props> = ({
             }
           />
         ))}
-        
+
       </Layer>
     </Stage>
   );

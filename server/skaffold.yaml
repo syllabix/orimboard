@@ -10,7 +10,7 @@ build:
 deploy:
   kubectl:
     manifests:
-    - k8s/*.yml
+      - k8s/*.yml
 profiles:
 - name: agones
   patches:

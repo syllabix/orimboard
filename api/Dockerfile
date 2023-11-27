@@ -1,4 +1,16 @@
-FROM rust:1.64-slim as builder
+################
+##### Builder
+FROM rust:1.74.0-alpine3.18 as builder
+
+RUN apk update
+RUN apk add --no-cache musl-dev curl unzip
+
+RUN curl -OL https://github.com/google/protobuf/releases/download/v25.1/protoc-25.1-linux-x86_64.zip
+RUN unzip protoc-25.1-linux-x86_64.zip -d protoc3
+RUN mv protoc3/bin/* /usr/bin/
+RUN mv protoc3/include/* /usr/include/
+
+ENV PROTOC /usr/bin/protoc
 
 WORKDIR /build
 RUN cargo init --bin --name orim-api
@@ -11,11 +23,12 @@ COPY src /build/src
 
 RUN cargo build --release
 
-# Debian 11 (bullseye)
-FROM debian:11-slim
+################
+##### Runtime
+FROM alpine:3.18 as runner
 
-RUN apt update
-RUN apt install curl -y
+RUN apk update
+RUN apk add curl
 
 WORKDIR /app
 COPY --from=builder /build/target/release/orim-api /app/

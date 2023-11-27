@@ -1,5 +1,4 @@
 import AuthManager, { Manager } from "api/auth/manager";
-import Client from "api/client";
 import { createUser } from "api/user";
 import { NavLogo } from "components/brand/logo";
 import Button from "components/button";
@@ -33,9 +32,15 @@ const Home: NextPage = () => {
           return errors;
         }}
         onSubmit={async (form) => {
-          let user = await createUser(form.name);
-          AuthManager.setToken(user.id.toString());
-          await Router.push("/board/90210");
+          try {
+            let user = await createUser(form.name);
+            AuthManager.setToken(user.id.toString());
+            await Router.push("/board/90210");
+          } catch (e) {
+            const errors = {} as FormikErrors<{ name: string }>;
+            errors.name = "account creation failed. it is possible we are not accepting new users at this time.";
+            return errors;
+          }
         }}
       >
         <div>

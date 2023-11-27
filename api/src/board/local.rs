@@ -8,6 +8,7 @@ impl Client {
         Client {}
     }
 
+    #[tracing::instrument(name = "allocate", skip(self, _board_id))]
     pub async fn allocate(
         &self,
         _board_id: usize,

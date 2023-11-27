@@ -1,6 +1,7 @@
 mod board;
 mod gameserver;
 mod handler;
+mod telemetry;
 mod user;
 
 use std::io::{Error, ErrorKind};
@@ -18,14 +19,21 @@ async fn main() -> std::io::Result<()> {
     std::env::set_var("RUST_BACKTRACE", "1");
 
     let log_level = std::env::var("RUST_LOG").unwrap_or_else(|_| "debug".to_string());
-    std::env::set_var("RUST_LOG", log_level);
+    std::env::set_var("RUST_LOG", &log_level);
 
     let host = std::env::var("HOST").unwrap_or_else(|_| "127.0.0.1".to_string());
     let port = std::env::var("PORT")
         .map(|ps| ps.parse::<u16>().expect("Invalid PORT specified"))
         .unwrap_or(8080);
 
-    let api_base_url = std::env::var("API_BASE_URL").unwrap_or_else(|_| "http://127.0.0.1:8081".to_string());
+    let api_base_url =
+        std::env::var("API_BASE_URL").unwrap_or_else(|_| "http://127.0.0.1:8081".to_string());
+
+    // telemetry::init_tracing(
+    //     String::from("orim-board-server"),
+    //     log_level,
+    //     String::from("http://localhost:4317"),
+    // );
 
     env_logger::init();
 

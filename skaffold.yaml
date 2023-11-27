@@ -1,6 +1,7 @@
 apiVersion: skaffold/v2beta29
 kind: Config
 requires:
+- path: ./fleet-manager
 - path: ./api
 - path: ./server
 - path: ./client

@@ -2,7 +2,7 @@ import { PalletteMode } from "components/pallette";
 import { LineData, Point, UserPositon } from "whiteboard/drawing/line";
 import { ChatMessage } from "../chat";
 import { User } from "../user";
-import { WidgetData, WidgetKind } from "../widget";
+import { WidgetData } from "../widget";
 
 export type WidgetState = { [id: string]: WidgetData };
 export type UserState = { [id: string]: User };
