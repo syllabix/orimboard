@@ -4,9 +4,9 @@
 //!
 
 #[cfg(feature = "agones_sdk")]
-mod sdk;
-#[cfg(feature = "agones_sdk")]
 mod health;
+#[cfg(feature = "agones_sdk")]
+mod sdk;
 
 #[cfg(feature = "agones_sdk")]
 pub use self::health::HealthChecker;
@@ -36,5 +36,5 @@ pub enum Error {
     #[error("failed to mark the server as ready: `{0}`")]
     ReadinessIssue(String),
     #[error("failed to cleanly shutdown the server: `{0}`")]
-    ShutdownFailure(String)
+    ShutdownFailure(String),
 }

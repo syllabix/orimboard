@@ -2,16 +2,15 @@ use tokio::{sync::mpsc, task};
 
 use super::{BoardEvent, Error};
 
-
-pub struct Manager{
-    board_events: mpsc::Sender<BoardEvent>
+pub struct Manager {
+    board_events: mpsc::Sender<BoardEvent>,
 }
 
 impl Manager {
     pub async fn setup() -> Result<Manager, Error> {
         let sender = Self::new_spaces_channel();
         Ok(Manager {
-            board_events: sender
+            board_events: sender,
         })
     }
 

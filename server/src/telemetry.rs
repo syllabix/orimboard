@@ -41,7 +41,6 @@ pub fn init_tracing(service_name: String, log_level: String, exporter_endpoint: 
         .with(level_filter)
         .with(tracing_layer)
         .with(JsonStorageLayer)
-
         .with(formatting_layer);
 
     global::set_text_map_propagator(TraceContextPropagator::new());

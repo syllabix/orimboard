@@ -1,15 +1,17 @@
-use std::{time::Duration};
+use std::time::Duration;
 
-use tokio::{sync::oneshot, sync::mpsc, task};
+use tokio::{sync::mpsc, sync::oneshot, task};
 
 pub struct HealthChecker {
-    _sender: oneshot::Sender<()>
+    _sender: oneshot::Sender<()>,
 }
 
 impl HealthChecker {
     pub fn new(sdk: &agones::Sdk) -> HealthChecker {
         log::info!("Starting health check via agones...");
-        HealthChecker { _sender: HealthChecker::create_channel(sdk) }
+        HealthChecker {
+            _sender: HealthChecker::create_channel(sdk),
+        }
     }
 
     fn create_channel(sdk: &agones::Sdk) -> oneshot::Sender<()> {
