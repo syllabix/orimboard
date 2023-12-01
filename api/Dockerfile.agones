@@ -35,7 +35,7 @@ COPY --from=builder /build/target/release/orim-api /app/
 
 ENV HOST "0.0.0.0"
 ENV RUST_LOG "debug"
-ENV CORS_ALLOW_ORIGIN "orimboard.io"
+ENV CORS_ALLOW_ORIGIN "http://34.107.226.218"
 ENV AGONES_ALLOCATOR_URL "http://agones-allocator.agones-sys.svc.cluster.local"
 
 ENV PORT "8080"

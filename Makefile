@@ -41,13 +41,21 @@ run.server:
 
 ## Provisions kubernetes cluster with Google Kubernetes Engine. ex: make cluster.gke project=orimboard
 cluster.gke:
+	@if [ -z "$(project)" ]; then \
+		echo "Error: project is not set"; \
+		exit 1; \
+	fi
 	./.cloud/gcp/setup.sh $(project)
 
 ## Deploys orimboard and its dependencies to the kubernetes cluster. ex: make deploy.gke project=orimboard
 deploy.gke:
+	@if [ -z "$(project)" ]; then \
+		echo "Error: project is not set - please rerun by providing project name. make deploy.gke project=<project name>"; \
+		exit 1; \
+	fi
 	skaffold run --profile agones --default-repo=europe-west4-docker.pkg.dev/$(project)/orimboard-artifact-registry
 
-## Setup the Agones helm chart
-setup.agones:
-	helm repo add agones https://agones.dev/chart/stable
-	helm repo update
+	## Setup the Agones helm chart
+	setup.agones:
+		helm repo add agones https://agones.dev/chart/stable
+		helm repo update

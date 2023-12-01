@@ -1,4 +1,4 @@
-FROM node:20-slim as builder
+FROM node:20-alpine as builder
 
 WORKDIR /app
 COPY package*.json /app/
@@ -9,7 +9,7 @@ COPY ./ /app/
 
 RUN npm run build
 
-FROM node:18-alpine AS runner
+FROM node:20-alpine AS runner
 WORKDIR /app
 
 # https://nextjs.org/docs/messages/sharp-missing-in-production

@@ -82,10 +82,10 @@ impl BoardEventHandler {
     async fn board_closed(&mut self, space_id: usize) {
         log::info!("Space id={} disconnected", space_id);
         self.boards_map.remove(&space_id);
-        self.sdk
-            .set_label(format!("gs-{}", &space_id), "")
-            .await
-            .expect(format!("Can't set label board-{} -> ''", &space_id).as_str());
+        // self.sdk
+        //     .set_label(format!("gs-{}", &space_id), "")
+        //     .await
+        //     .expect(format!("Can't set label board-{} -> ''", &space_id).as_str());
 
         if self.boards_map.len() == 0 {
             self.sdk.shutdown().await.expect("Can't shutdown server.")
@@ -102,10 +102,10 @@ impl BoardEventHandler {
         self.boards_map
             .entry(space_id)
             .or_insert_with(|| HashSet::new());
-        self.sdk
-            .set_label(format!("gs-{}", space_id), "space-id")
-            .await
-            .expect(format!("Can't reserve space {}", space_id).as_str());
+        // self.sdk
+        //     .set_label(format!("gs-{}", space_id), "space-id")
+        //     .await
+        //     .expect(format!("Can't reserve space {}", space_id).as_str());
         if self.boards_map.len() == self.max_board_count {
             self.sdk
                 .allocate() // set allocated so that agones knows not to schedule this board.

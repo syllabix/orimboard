@@ -11,6 +11,7 @@ import { User } from "api/user";
 import { GameServer } from "api/board/useAllocator";
 import Client from "api/client";
 import { BoardStateLoader } from "whiteboard/state/loader";
+import { Logo, NavLogo } from "components/brand/logo";
 
 type Props = {
   id: string;
@@ -34,6 +35,16 @@ const WhiteboardPage: NextPage<Props> = ({ id, user, server }) => {
         />
       </Head>
       <BoardNav boardname="My Awesome Board" />
+      {!state.connected && (
+        <div className="flex flex-col justify-center items-center h-full">
+          <div className="bg-slate-600 shadow-lg rounded-md px-4 py-2 flex content-center mt-64">
+            <div className="flex">
+              <Logo />
+              <p className="text-xs text-center ml-2 mt-2">connecting...</p>
+            </div>
+          </div>
+        </div>
+      )}
       {state.connected && (
         <>
           <BoardStateLoader

@@ -1,6 +1,6 @@
 import Image from "next/image";
 
-const Logo = () => <Image alt="orimboard logo" width={30} height={35} src={"/logo.png"} />;
+export const Logo = () => <Image alt="orimboard logo" width={30} height={35} src={"/logo.png"} />;
 
 const BrandTitle = () => (
   <Image width={71} height={35} alt="orimboard brand title" src={"/brandtitle.png"} />

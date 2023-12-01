@@ -38,7 +38,7 @@ ENV USER_CAPACITY "200"
 ENV PORT "8888"
 ENV HOST "0.0.0.0"
 ENV RUST_LOG "info"
-ENV CORS_ALLOW_ORIGIN "orimboard.io"
+ENV CORS_ALLOW_ORIGIN "http://34.107.226.218"
 ENV API_BASE_URL "http://api.api.svc.cluster.local:8080"
 
 CMD ["./orim-board-server"]

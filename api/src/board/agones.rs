@@ -64,17 +64,19 @@ impl From<AllocateResponse> for GameServer {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub struct Client {
     url: String,
-    http: reqwest::Client,
+    // http: ,
+    lock: tokio::sync::Mutex<reqwest::Client>
 }
 
 impl Client {
     pub fn new(base_url: String) -> Client {
         Client {
             url: format!("{}/gameserverallocation", base_url),
-            http: reqwest::Client::new(),
+            // http: ,
+            lock: tokio::sync::Mutex::new(reqwest::Client::new())
         }
     }
 
@@ -83,6 +85,7 @@ impl Client {
         &self,
         board_id: usize,
     ) -> Result<GameServer, Box<dyn std::error::Error>> {
+        let http = self.lock.lock().await;
         let mut board_id_label = HashMap::new();
         board_id_label.insert(
             format!("agones.dev/sdk-gs-{}", board_id),
@@ -104,8 +107,7 @@ impl Client {
                 },
             ],
         };
-        let result: AllocateResponse = self
-            .http
+        let result: AllocateResponse = http
             .post(&self.url)
             .json(&req_body)
             .send()

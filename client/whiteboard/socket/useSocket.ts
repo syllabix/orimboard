@@ -1,8 +1,8 @@
 import { Dispatch, MutableRefObject, useEffect, useRef } from "react";
 import { BoardAction } from "../state/action";
-import getConfig from "next/config";
 import { GameServer } from "api/board/useAllocator";
 import { User } from "api/user";
+import { useRouter } from 'next/router';
 
 type Updater = (update: BoardAction) => void;
 
@@ -13,6 +13,7 @@ export const useSocket = (
   dispatch: Dispatch<BoardAction>
 ): Updater => {
   const ws: MutableRefObject<WebSocket | null> = useRef(null);
+  const router = useRouter();
   useEffect(() => {
     const serverURL = `ws://${server.address}:${server.port}/v1/board/${id}/connect?tk=${user.id}`;
     ws.current = new WebSocket(serverURL);
@@ -31,6 +32,7 @@ export const useSocket = (
         payload: false,
       });
       console.log("connection lost");
+      setTimeout(() => router.reload(), 2000);
     };
 
     ws.current.onmessage = (evt: MessageEvent) => {
