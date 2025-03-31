@@ -18,7 +18,7 @@ When running in k8s - the board servers are treated as game servers, and are man
 
 ### getting started
 
-1. [Install Rust](https://www.rust-lang.org/tools/install) ( >= rustc 1.62.0 )
+1. [Install Rust](https://www.rust-lang.org/tools/install) ( >= rustc 1.85.1 )
 2. [Install Node.js](https://nodejs.org/en/download/current/) (>= v18.9.0)
 
 ```bash
