@@ -14,6 +14,12 @@ help: ## display this help message
 	@echo "$(BLUE)Available targets:$(RESET)"
 	@grep -E '^[a-zA-Z0-9_.-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "$(GREEN)%-20s$(RESET) %s\n", $$1, $$2}'
 
+setup: ## install node dependencies and build api and server project
+	cd client && npm install
+	cd api && cargo build
+	cd server && cargo build
+
+
 run: # start up the complete product in local development mode
 	@echo "$(BLUE)Starting up orimboard in local development mode...$(RESET)"
 	@make -j 3 client.run server.run api.run
