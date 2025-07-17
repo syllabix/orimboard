@@ -21,15 +21,27 @@ When running in k8s - the board servers are treated as game servers, and are man
 1. [Install Rust](https://www.rust-lang.org/tools/install) ( >= rustc 1.85.1 )
 2. [Install Node.js](https://nodejs.org/en/download/current/) (>= v18.9.0)
 
+once the above dependencies are installed, you can proceed with starting the project in develpment mode by using the Makefile
+
+```bash
+make run
+```
+
+then open multiple web browsers @ <http://localhost:3000>
+
+#### local development
+
+Run `make help` to see all the available utilties to start the project. if you would like to run individual services, you can do the following:
+
 ```bash
 ## start up the api server
-make run.api
+make api.run
 
 ## start up the board server
-make run.server
+make server.run
 
 ## start up the client
-make run.client
+make client.run
 ```
 
 then open multiple web browsers @ <http://localhost:3000>

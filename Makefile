@@ -2,52 +2,38 @@
 ## sets the cloud project name when provisioning kubernetes cluster
 project := ""
 
-## Print the help message.
-# Parses this Makefile and prints targets that are preceded by "##" comments.
-help:
-	@echo "" >&2
-	@echo "Available targets: " >&2
-	@echo "" >&2
-	@awk -F : '\
-			BEGIN { in_doc = 0; } \
-			/^##/ && in_doc == 0 { \
-				in_doc = 1; \
-				doc_first_line = $$0; \
-				sub(/^## */, "", doc_first_line); \
-			} \
-			$$0 !~ /^#/ && in_doc == 1 { \
-				in_doc = 0; \
-				if (NF <= 1) { \
-					next; \
-				} \
-				printf "  %-15s %s\n", $$1, doc_first_line; \
-			} \
-			' <"$(abspath $(lastword $(MAKEFILE_LIST)))" \
-		| sort >&2
-	@echo "" >&2
+# Default target
+.DEFAULT_GOAL := help
 
-## Start up the orim client
-run.client:
+# Colors for help output
+BLUE := \033[34m
+GREEN := \033[32m
+RESET := \033[0m
+
+help: ## display this help message
+	@echo "$(BLUE)Available targets:$(RESET)"
+	@grep -E '^[a-zA-Z0-9_.-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "$(GREEN)%-20s$(RESET) %s\n", $$1, $$2}'
+
+run: # start up the complete product in local development mode
+	@echo "$(BLUE)Starting up orimboard in local development mode...$(RESET)"
+	@make -j 3 client.run server.run api.run
+
+client.run: ## start up the orim client
 	cd client && npm install
 	cd client && npm run dev
 
-## Start up the orim api server
-run.api:
+api.run: ## start up the orim api server
 	cd api && cargo run
 
-## Start up the orim board server
-run.server:
+server.run: ## start up the orim board server
 	cd server && cargo run
 
-## Provisions kubernetes cluster with Google Kubernetes Engine. ex: make cluster.gke project=orimboard
-cluster.gke:
+cluster.gke: ## provisions kubernetes cluster with Google Kubernetes Engine. ex: make cluster.gke project=orimboard
 	./.cloud/gcp/setup.sh $(project)
 
-## Deploys orimboard and its dependencies to the kubernetes cluster. ex: make deploy.gke project=orimboard
-deploy.gke:
+deploy.gke: ## deploys orimboard and its dependencies to the kubernetes cluster. ex: make deploy.gke project=orimboard
 	skaffold run --profile agones --default-repo=europe-west4-docker.pkg.dev/$(project)/orimboard-artifact-registry
 
-## Setup the Agones helm chart
-setup.agones:
+setup.agones: ## setup the Agones helm chart
 	helm repo add agones https://agones.dev/chart/stable
 	helm repo update
