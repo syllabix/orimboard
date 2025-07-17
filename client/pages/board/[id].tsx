@@ -11,6 +11,7 @@ import { User } from "api/user";
 import { GameServer } from "api/board/useAllocator";
 import Client from "api/client";
 import { BoardStateLoader } from "whiteboard/state/loader";
+import { Alert } from "components/feedback/Alert";
 
 type Props = {
   id: string;
@@ -34,24 +35,29 @@ const WhiteboardPage: NextPage<Props> = ({ id, user, server }) => {
         />
       </Head>
       <BoardNav boardname="My Awesome Board" />
-      {state.connected && (
-        <>
-          <BoardStateLoader
-            id={id}
-            user={user}
-            server={server}
-            dispatch={dispatch}
-          />
-          <Pallette onUpdate={updater} />
-          <Messenger
-            user={state.activeUser}
-            users={state.users}
-            messages={state.chat}
-            send={updater}
-          />
-          <Whiteboard state={state} dispatch={updater} />
-        </>
-      )}
+
+      <BoardStateLoader
+        id={id}
+        user={user}
+        server={server}
+        dispatch={dispatch}
+      />
+      <Pallette onUpdate={updater} />
+      <Messenger
+        user={state.activeUser}
+        users={state.users}
+        messages={state.chat}
+        send={updater}
+      />
+      <Whiteboard state={state} dispatch={updater} />
+
+      {(!state.connected && (
+        <div className="toast toast-bottom toast-center">
+          <Alert kind="warning">
+            <span>Not connected to backend. Attempting to reconnect...</span>
+          </Alert>
+        </div>
+      ))}
     </>
   );
 };

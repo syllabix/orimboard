@@ -1,89 +1,68 @@
 import { KonvaEventObject } from "konva/lib/Node";
 import { ReactNode, useRef } from "react";
-import { Text, Layer, Line, Stage } from "react-konva";
-import { useWindowSize } from "whiteboard/hooks/useWindowSize";
+import { Stage } from "react-konva";
 import { BoardAction } from "whiteboard/state/action";
-import BoardState from "./state";
+import { useWindowSize } from "whiteboard/hooks/useWindowSize";
+import BoardState from "whiteboard/state";
+import Konva from "konva";
 import { v4 as uuidv4 } from "uuid";
 
 type Props = {
-  state: BoardState;
   children: ReactNode;
-  cursor?: "default" | "grab" | "grabbing" | "url('/pencil.svg') 0 30,move";
+  state: BoardState;
   dispatch: (msg: BoardAction) => void;
-  onRelease: (e: KonvaEventObject<MouseEvent>) => void;
+  cursor: string;
+  onRelease?: (e: KonvaEventObject<MouseEvent>) => void;
 };
 
 export const Sketchpad: React.FC<Props> = ({
-  state,
-  cursor = "default",
   children,
+  state,
   dispatch,
+  cursor,
   onRelease,
 }) => {
-  const window = useWindowSize();
+  const { width, height } = useWindowSize();
+  const drawing = useRef({ active: false, id: "" });
 
-  const drawing = useRef({
-    active: false,
-    id: "",
-  });
-
-  const handleMouseDown = (e: KonvaEventObject<MouseEvent>) => {
-    if (state.mode !== "draw") return;
-
-    const pos = e.target.getStage()?.getPointerPosition();
-    if (pos == null) return;
-
-    const id = uuidv4();
-
-    drawing.current = {
-      active: true,
-      id,
-    };
-
-    dispatch({
-      type: "draw",
-      payload: {
-        id: id,
-        point: {
-          x: pos.x,
-          y: pos.y,
-        },
-        color: "#34ebc0",
-        action: "start",
-      },
-    });
+  const getTransformedPointer = (stage: Konva.Stage) => {
+    const pointer = stage.getPointerPosition();
+    if (!pointer) {
+      return null;
+    }
+    const transform = stage.getAbsoluteTransform().copy();
+    transform.invert();
+    return transform.point(pointer);
   };
 
   const handleMouseMove = (e: KonvaEventObject<MouseEvent>) => {
     const stage = e.target.getStage();
-    const pos = stage?.getPointerPosition();
-    if (pos == null) return;
+    if (!stage) {
+      return;
+    }
+    const point = getTransformedPointer(stage);
+    if (!point) {
+      return;
+    }
 
-    if (drawing.current.active) {
-      dispatch({
-        type: "draw",
-        payload: {
-          id: drawing.current.id,
-          point: {
-            x: pos.x,
-            y: pos.y,
+    if (state.mode === "draw" && e.evt.buttons === 1) {
+      if (drawing.current.active) {
+        dispatch({
+          type: "draw",
+          payload: {
+            id: drawing.current.id,
+            point: point,
+            color: "#34ebc0",
+            action: "stroke",
           },
-          color: "#34ebc0",
-          action: "stroke",
-        },
-      });
-    } else {
-      const id = uuidv4();
-
+        });
+      }
+    } else if (e.evt.buttons !== 1) {
       dispatch({
         type: "move",
         payload: {
-          id: id,
-          point: {
-            x: pos.x,
-            y: pos.y,
-          },
+          id: uuidv4(),
+          point: point,
           userId: state.activeUser.id,
         },
       });
@@ -91,52 +70,112 @@ export const Sketchpad: React.FC<Props> = ({
   };
 
   const handleMouseUp = (e: KonvaEventObject<MouseEvent>) => {
-    onRelease(e);
-    drawing.current = {
-      active: false,
-      id: "",
+    if (drawing.current.active) {
+      const stage = e.target.getStage();
+      if (!stage) {
+        return;
+      }
+      const point = getTransformedPointer(stage);
+      if (!point) {
+        return;
+      }
+      dispatch({
+        type: "draw",
+        payload: {
+          id: drawing.current.id,
+          point: point,
+          color: "#34ebc0",
+          action: "finish",
+        },
+      });
+      drawing.current.active = false;
+      drawing.current.id = "";
+    }
+    if (onRelease) {
+      onRelease(e);
+    }
+  };
+
+  const handleWheel = (e: KonvaEventObject<WheelEvent>) => {
+    e.evt.preventDefault();
+    const stage = e.target.getStage();
+    if (!stage) {
+      return;
+    }
+
+    const oldScale = stage.scaleX();
+    const pointer = stage.getPointerPosition();
+
+    if (!pointer) {
+      return;
+    }
+
+    const mousePointTo = {
+      x: (pointer.x - stage.x()) / oldScale,
+      y: (pointer.y - stage.y()) / oldScale,
     };
+
+    const scaleBy = 1.05;
+    const newScale = e.evt.deltaY > 0 ? oldScale / scaleBy : oldScale * scaleBy;
+
+    stage.scale({ x: newScale, y: newScale });
+
+    const newPos = {
+      x: pointer.x - mousePointTo.x * newScale,
+      y: pointer.y - mousePointTo.y * newScale,
+    };
+    stage.position(newPos);
+    stage.batchDraw();
+  };
+
+  const handleDragEnd = (e: KonvaEventObject<DragEvent>) => {
+    const stage = e.target.getStage();
+    if (!stage) {
+      return;
+    }
+    const newPos = stage.position();
+    const scale = stage.scaleX();
   };
 
   return (
     <Stage
-      width={window.width}
-      height={window.height}
-      style={{ cursor }}
-      className="absolute top-0 left-0"
-      onMouseDown={handleMouseDown}
-      onMousemove={handleMouseMove}
-      onMouseup={handleMouseUp}
+      width={width}
+      height={height}
+      style={{ cursor: cursor }}
+      onMouseDown={(e) => {
+        // deselect when clicked on empty area
+        if (e.target === e.target.getStage()) {
+          if (state.mode === "draw") {
+            const stage = e.target.getStage();
+            if (!stage) {
+              return;
+            }
+            const point = getTransformedPointer(stage);
+            if (!point) {
+              return;
+            }
+            const id = uuidv4();
+            drawing.current.active = true;
+            drawing.current.id = id;
+            dispatch({
+              type: "draw",
+              payload: {
+                id: id,
+                point: point,
+                color: "#34ebc0",
+                action: "start",
+              },
+            });
+          }
+        }
+      }}
+      onMouseMove={handleMouseMove}
+      onMouseUp={handleMouseUp}
+      onWheel={handleWheel}
+      draggable={state.mode !== "draw"}
+      onDragEnd={handleDragEnd}
     >
       {children}
-      <Layer>
-        {[...state.userPositions.values()].map(userPosition => (
-          <Text
-            text={userPosition.userName ?? "Unknown"}
-            x={userPosition.point.x}
-            y={userPosition.point.y}
-            key={userPosition.id}
-            fontSize={15}
-            fontFamily={"Calibri"}
-            fill={userPosition.color ?? "#000000"}
-          />
-        ))}
-        {state.lines.map((line) => (
-          <Line
-            key={line.id}
-            points={line.points}
-            stroke={line.color}
-            strokeWidth={10}
-            tension={0.5}
-            lineCap="round"
-            lineJoin="round"
-            globalCompositeOperation={
-              line.tool === "eraser" ? "destination-out" : "source-over"
-            }
-          />
-        ))}
-
-      </Layer>
     </Stage>
   );
 };

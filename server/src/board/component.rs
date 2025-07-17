@@ -23,8 +23,8 @@ pub struct ChatMessage {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Point {
-    pub x: i64,
-    pub y: i64,
+    pub x: f64,
+    pub y: f64,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -44,7 +44,7 @@ pub struct DrawInstruction {
 pub struct DrawnLine {
     pub id: String,
     pub color: String,
-    pub points: Vec<i64>,
+    pub points: Vec<f64>,
     pub action: DrawAction,
     pub user_id: user::ID,
 }
