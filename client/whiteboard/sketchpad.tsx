@@ -109,18 +109,7 @@ export const Sketchpad: React.FC<Props> = ({
       onMouseup={handleMouseUp}
     >
       {children}
-      <Layer>
-        {[...state.userPositions.values()].map(userPosition => (
-          <Text
-            text={userPosition.userName ?? "Unknown"}
-            x={userPosition.point.x}
-            y={userPosition.point.y}
-            key={userPosition.id}
-            fontSize={15}
-            fontFamily={"Calibri"}
-            fill={userPosition.color ?? "#000000"}
-          />
-        ))}
+      <Layer>        
         {state.lines.map((line) => (
           <Line
             key={line.id}
@@ -135,7 +124,6 @@ export const Sketchpad: React.FC<Props> = ({
             }
           />
         ))}
-
       </Layer>
     </Stage>
   );

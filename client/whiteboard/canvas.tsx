@@ -1,6 +1,6 @@
 import { KonvaEventObject } from "konva/lib/Node";
 import { useEffect, useRef, useState } from "react";
-import { Layer, Line, Rect, Stage } from "react-konva";
+import { Layer, Line, Rect, Stage, Text } from "react-konva";
 import { Sketchpad } from "whiteboard/sketchpad";
 import { BoardAction } from "whiteboard/state/action";
 import { WidgetData } from "whiteboard/widget";
@@ -9,6 +9,7 @@ import { Rectangle } from "whiteboard/widget/shape/rectangle";
 import { Star } from "whiteboard/widget/shape/star";
 import { StickyNote } from "whiteboard/widget/sticky/stickynote";
 import BoardState from "./state";
+import Cursor from "whiteboard/widget/user/cursor";
 
 type Props = {
   state: BoardState;
@@ -61,7 +62,7 @@ export const Canvas: React.FC<Props> = ({ state, dispatch }) => {
       state={state}
       dispatch={dispatch}
       onRelease={handleDeselect}
-    >
+    >      
       <Layer>
         {Object.values(state.widgets).map((widget) => {
           switch (widget.kind) {
@@ -132,6 +133,18 @@ export const Canvas: React.FC<Props> = ({ state, dispatch }) => {
               );
           }
         })}
+      </Layer>
+      <Layer>
+        {[...state.userPositions.values()].map(userPosition => (
+          <Cursor
+            key={userPosition.id}
+            id={userPosition.id}
+            username={userPosition.userName ?? "Unknown"}
+            x={userPosition.point.x}
+            y={userPosition.point.y}
+            fill={userPosition.color ?? "#000000"}
+          />
+        ))}
       </Layer>
     </Sketchpad>
   );
