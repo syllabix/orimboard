@@ -9,7 +9,7 @@ import { Rectangle } from "whiteboard/widget/shape/rectangle";
 import { Star } from "whiteboard/widget/shape/star";
 import { StickyNote } from "whiteboard/widget/sticky/stickynote";
 import BoardState from "./state";
-import { Cursor } from "./widget/user/cursor";
+import { PointerCursor } from "./widget/user/cursor";
 
 type Props = {
   state: BoardState;
@@ -153,7 +153,7 @@ export const Canvas: React.FC<Props> = ({ state, dispatch }) => {
       </Layer>
       <Layer id="cursor-layer">
         {[...state.userPositions.values()].map(userPosition => (
-          <Cursor
+          <PointerCursor
             key={userPosition.id}
             id={userPosition.userId}
             username={userPosition.userName ?? "Unknown"}

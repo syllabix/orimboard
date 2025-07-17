@@ -11,7 +11,7 @@ type Props = {
   fill: string;
 };
 
-export const Cursor: React.FC<Props> = ({ id, username, x, y, fill }) => {
+export const PointerCursor: React.FC<Props> = ({ id, username, x, y, fill }) => {
   const groupRef = useRef<Konva.Group>(null);
   const textRef = useRef<KonvaText>(null);
   const [pillWidth, setPillWidth] = useState(0);

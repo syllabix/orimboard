@@ -1,9 +1,6 @@
 import {
-  LegacyRef,
-  MutableRefObject,
   useEffect,
   useRef,
-  useState,
 } from "react";
 import { Group, Rect, Text, Transformer } from "react-konva";
 import { WidgetActions, WidgetData } from "whiteboard/widget";
@@ -17,23 +14,32 @@ export const StickyNote: React.FC<WidgetData & WidgetActions> = ({
   selected,
   onChange,
   onSelect,
-  onMouseEnter = () => {},
-  onMouseLeave = () => {},
-  onMouseDown = () => {},
-  onMouseUp = () => {},
+  onMouseEnter = () => { },
+  onMouseLeave = () => { },
+  onMouseDown = () => { },
+  onMouseUp = () => { },
   ...props
 }) => {
-  const trRef: LegacyRef<ITransformer> = useRef(null);
-  const paperRef: LegacyRef<IRect> = useRef(null);
-  const textRef: MutableRefObject<HTMLTextAreaElement | null> = useRef(null);
+  const trRef = useRef<ITransformer>(null);
+  const paperRef = useRef<IRect>(null);
+  const textRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
-    if (selected && trRef.current && paperRef.current && textRef.current) {
-      trRef.current.nodes([paperRef.current]);
-      trRef.current.getLayer()?.batchDraw();
-      const end = props.text?.length || 1;
-      textRef.current.setSelectionRange(end, end);
-      textRef.current.focus();
+    if (selected) {
+      if (trRef.current && paperRef.current) {
+        trRef.current.nodes([paperRef.current]);
+        trRef.current.getLayer()?.batchDraw();
+      }
+      // For some reason, the text area is not focused on the first click
+      // We are using a timeout to wait for the next render
+      setTimeout(() => {
+        if (!textRef.current) {
+          return;
+        }
+        textRef.current.focus();
+        const end = props.text?.length || 0;
+        textRef.current.setSelectionRange(end, end);
+      }, 0);
     }
   }, [selected]);
 
