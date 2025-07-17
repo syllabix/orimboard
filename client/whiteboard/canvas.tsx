@@ -9,7 +9,7 @@ import { Rectangle } from "whiteboard/widget/shape/rectangle";
 import { Star } from "whiteboard/widget/shape/star";
 import { StickyNote } from "whiteboard/widget/sticky/stickynote";
 import BoardState from "./state";
-import Cursor from "whiteboard/widget/user/cursor";
+import { Cursor } from "./widget/user/cursor";
 
 type Props = {
   state: BoardState;
@@ -62,7 +62,7 @@ export const Canvas: React.FC<Props> = ({ state, dispatch }) => {
       state={state}
       dispatch={dispatch}
       onRelease={handleDeselect}
-    >      
+    >
       <Layer>
         {Object.values(state.widgets).map((widget) => {
           switch (widget.kind) {
@@ -135,10 +135,27 @@ export const Canvas: React.FC<Props> = ({ state, dispatch }) => {
         })}
       </Layer>
       <Layer>
+        {state.lines.map((line) => (
+          <Line
+            key={line.id}
+            points={line.points}
+            stroke={line.color}
+            strokeWidth={10}
+            tension={0.5}
+            lineCap="round"
+            lineJoin="round"
+            globalCompositeOperation={
+              line.tool === "eraser" ? "destination-out" : "source-over"
+            }
+          />
+        ))}
+
+      </Layer>
+      <Layer id="cursor-layer">
         {[...state.userPositions.values()].map(userPosition => (
           <Cursor
             key={userPosition.id}
-            id={userPosition.id}
+            id={userPosition.userId}
             username={userPosition.userName ?? "Unknown"}
             x={userPosition.point.x}
             y={userPosition.point.y}
