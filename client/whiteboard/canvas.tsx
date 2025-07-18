@@ -27,6 +27,24 @@ export const Canvas: React.FC<Props> = ({ state, dispatch }) => {
   const [hoverstate, setHoverState] = useState<CursorAppearance>("default");
 
   useEffect(() => {
+    const container = document.getElementsByClassName(
+      "konvajs-content"
+    )[0] as HTMLElement;
+    container.tabIndex = 1;
+    container.addEventListener("keydown", (e: KeyboardEvent) => {
+      if ((e.key === "Delete" || e.key === "Backspace") && selectedId) {
+        dispatch({
+          type: "delete",
+          payload: {
+            id: selectedId,
+          },
+        });
+        setSelected(null);
+      }
+    });
+  }, [selectedId, dispatch]);
+
+  useEffect(() => {
     if (state.mode === "draw") {
       setHoverState("url('/pencil.svg') 0 30,move");
     } else {

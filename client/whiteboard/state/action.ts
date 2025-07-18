@@ -65,6 +65,13 @@ type ToggleMode = {
   payload: PalletteMode;
 };
 
+type DeleteWidget = {
+  type: "delete";
+  payload: {
+    id: string;
+  };
+};
+
 export type BoardAction =
   | Connect
   | UserJoin
@@ -75,4 +82,5 @@ export type BoardAction =
   | Draw
   | Move
   | SetupState
+  | DeleteWidget
   | ToggleMode;

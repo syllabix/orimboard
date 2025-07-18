@@ -64,7 +64,13 @@ impl Service {
                 self.users.remove(&payload);
                 Action::Leave { payload }
             }
-            _ => action,
+            Action::Delete { payload } => {
+                self.widgets.remove(&payload.id);
+                Action::Delete { payload }
+            },
+            Action::Move { payload } => {
+                Action::Move { payload }
+            },
         }
     }
 

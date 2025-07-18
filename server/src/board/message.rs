@@ -3,6 +3,8 @@ use actix::{Message, MessageResponse, Recipient};
 use serde::{Deserialize, Serialize};
 use std::time::SystemTime;
 
+use crate::board::component::DeleteRequest;
+
 use super::{
     component::{ChatMessage, DrawInstruction, DrawnLine, UserPosition, UserProfile, Widget},
     space, user,
@@ -27,6 +29,7 @@ pub enum Action {
     Chat { payload: ChatMessage },
     Draw { payload: DrawInstruction },
     Widget { payload: Widget },
+    Delete { payload: DeleteRequest },
     Join { payload: UserProfile },
     Leave { payload: user::ID },
     Move { payload: UserPosition },

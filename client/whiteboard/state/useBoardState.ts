@@ -53,6 +53,13 @@ const reducer = (state: BoardState, action: BoardAction): BoardState => {
         mode: action.payload,
       };
 
+    case "delete":
+      const { [action.payload.id]: widget, ...remaining } = state.widgets;
+      return {
+        ...state,
+        widgets: { ...remaining },
+      };
+
     case "widget":
       return {
         ...state,
