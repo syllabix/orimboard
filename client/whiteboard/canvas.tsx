@@ -31,7 +31,8 @@ export const Canvas: React.FC<Props> = ({ state, dispatch }) => {
       "konvajs-content"
     )[0] as HTMLElement;
     container.tabIndex = 1;
-    container.addEventListener("keydown", (e: KeyboardEvent) => {
+
+    const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.key === "Delete" || e.key === "Backspace") && selectedId) {
         dispatch({
           type: "delete",
@@ -41,7 +42,12 @@ export const Canvas: React.FC<Props> = ({ state, dispatch }) => {
         });
         setSelected(null);
       }
-    });
+    };
+
+    container.addEventListener("keydown", handleKeyDown);
+    return () => {
+      container.removeEventListener("keydown", handleKeyDown);
+    };
   }, [selectedId, dispatch]);
 
   useEffect(() => {
@@ -143,6 +149,7 @@ export const Canvas: React.FC<Props> = ({ state, dispatch }) => {
                   onMouseUp={() => setCursorAppearance("grab")}
                   onMouseDown={() => setCursorAppearance("grabbing")}
                   text={widget.text || ""}
+                  dispatch={dispatch}
                   {...widget}
                   onChange={(update) => {
                     moveWidget(update);

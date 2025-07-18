@@ -9,15 +9,21 @@ import { KonvaEventObject } from "konva/lib/Node";
 import { Rect as IRect } from "konva/lib/shapes/Rect";
 import { Html } from "react-konva-utils";
 import TextareaAutosize from "react-textarea-autosize";
+import { BoardAction } from "whiteboard/state/action";
 
-export const StickyNote: React.FC<WidgetData & WidgetActions> = ({
+type StickyNoteActions = WidgetActions & {
+  dispatch: (action: BoardAction) => void;
+};
+
+export const StickyNote: React.FC<WidgetData & StickyNoteActions> = ({
   selected,
   onChange,
   onSelect,
-  onMouseEnter = () => { },
-  onMouseLeave = () => { },
-  onMouseDown = () => { },
-  onMouseUp = () => { },
+  onMouseEnter = () => {},
+  onMouseLeave = () => {},
+  onMouseDown = () => {},
+  onMouseUp = () => {},
+  dispatch,
   ...props
 }) => {
   const trRef = useRef<ITransformer>(null);
@@ -125,6 +131,18 @@ export const StickyNote: React.FC<WidgetData & WidgetActions> = ({
                 lineHeight: "24px",
                 overflowY: "hidden",
                 padding: "12px",
+              }}
+              onKeyDown={(e) => {
+                if (
+                  (e.key === "Delete" || e.key === "Backspace") &&
+                  !props.text
+                ) {
+                  e.preventDefault();
+                  if (textRef.current) {
+                    textRef.current.blur();
+                  }
+                  dispatch({ type: "delete", payload: { id: props.id } });
+                }
               }}
               onChange={(e) => {
                 onChange({
